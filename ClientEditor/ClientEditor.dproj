@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{5019ede9-dfcc-45a2-96fc-219d9cfc48c1}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>ClientEditor.exe</DCC_DependencyCheckOutputName>
+    <MainSource>ClientEditor.dpr</MainSource>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_UnitSearchPath>C:\ProgzDebilum\ChaosUnit;C:\ProgzDebilum\Libz\MiniGraph32;C:\ProgzDebilum\Libz\Zlib;C:\ProgzDebilum\Libz\LZMA</DCC_UnitSearchPath>
+    <DCC_ResourcePath>C:\ProgzDebilum\ChaosUnit;C:\ProgzDebilum\Libz\MiniGraph32;C:\ProgzDebilum\Libz\Zlib;C:\ProgzDebilum\Libz\LZMA</DCC_ResourcePath>
+    <DCC_ObjPath>C:\ProgzDebilum\ChaosUnit;C:\ProgzDebilum\Libz\MiniGraph32;C:\ProgzDebilum\Libz\Zlib;C:\ProgzDebilum\Libz\LZMA</DCC_ObjPath>
+    <DCC_IncludePath>C:\ProgzDebilum\ChaosUnit;C:\ProgzDebilum\Libz\MiniGraph32;C:\ProgzDebilum\Libz\Zlib;C:\ProgzDebilum\Libz\LZMA</DCC_IncludePath>
+    <DCC_Define>RELEASE;FASTSTREAM_ZLIB</DCC_Define>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_UnitSearchPath>C:\ProgzDebilum\ChaosUnit;C:\ProgzDebilum\Libz\MiniGraph32;C:\ProgzDebilum\Libz\Zlib;C:\ProgzDebilum\Libz\LZMA</DCC_UnitSearchPath>
+    <DCC_ResourcePath>C:\ProgzDebilum\ChaosUnit;C:\ProgzDebilum\Libz\MiniGraph32;C:\ProgzDebilum\Libz\Zlib;C:\ProgzDebilum\Libz\LZMA</DCC_ResourcePath>
+    <DCC_ObjPath>C:\ProgzDebilum\ChaosUnit;C:\ProgzDebilum\Libz\MiniGraph32;C:\ProgzDebilum\Libz\Zlib;C:\ProgzDebilum\Libz\LZMA</DCC_ObjPath>
+    <DCC_IncludePath>C:\ProgzDebilum\ChaosUnit;C:\ProgzDebilum\Libz\MiniGraph32;C:\ProgzDebilum\Libz\Zlib;C:\ProgzDebilum\Libz\LZMA</DCC_IncludePath>
+    <DCC_Define>DEBUG;FASTSTREAM_ZLIB</DCC_Define>
+    <DCC_IOChecking>False</DCC_IOChecking>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><VersionInfo><VersionInfo Name="IncludeVerInfo">True</VersionInfo><VersionInfo Name="AutoIncBuild">True</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">1</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">100</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1036</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.1.0.100</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Excluded_Packages>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <Excluded_Packages Name="$(BDS)\bin\dcldb100.bpl">CodeGear Database Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclmid100.bpl">CodeGear MyBase DataAccess Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclact100.bpl">CodeGear ActionBar Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclie100.bpl">Internet Explorer Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dcltee7100.bpl">TeeChart Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclbde100.bpl">CodeGear BDE DB Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclmcn100.bpl">CodeGear DataSnap Connection Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\Bin\dclib100.bpl">Borland InterBase Express Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclado100.bpl">CodeGear ADO DB Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclIntraweb_90_100.bpl">VCL for the Web 9.0 Design Package for CodeGear RAD Studio</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dcldbx4100.bpl">CodeGear dbExpress Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclwbm100.bpl">CodeGear InternetExpress Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclnet100.bpl">CodeGear Internet Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dcldbxcds4100.bpl">CodeGear SimpleDataset Component (DBX)</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclwebsnap100.bpl">CodeGear WebSnap Components</Excluded_Packages>
+      <Excluded_Packages Name="$(BDS)\bin\dclsoap100.bpl">CodeGear SOAP Components</Excluded_Packages>
+    </Excluded_Packages><Source><Source Name="MainSource">ClientEditor.dpr</Source></Source></Delphi.Personality><ModelSupport>False</ModelSupport></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup>
+    <DelphiCompile Include="ClientEditor.dpr">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="Globals.pas" />
+    <DCCReference Include="HashPool.pas" />
+    <DCCReference Include="hashunit.pas" />
+    <DCCReference Include="IdTypes.pas" />
+    <DCCReference Include="ItemSkin.pas">
+      <Form>FrmItemSkinEd</Form>
+    </DCCReference>
+    <DCCReference Include="MidEditor.pas">
+      <Form>FrmMIdEd</Form>
+    </DCCReference>
+    <DCCReference Include="OtherUtils.pas" />
+    <DCCReference Include="Particules.pas" />
+    <DCCReference Include="PuppetSkinEdit.pas">
+      <Form>FrmPuppetSkinEdit</Form>
+    </DCCReference>
+    <DCCReference Include="SkinEdit.pas">
+      <Form>FrmSkinEdit</Form>
+    </DCCReference>
+    <DCCReference Include="SpellEdit.pas">
+      <Form>FrmSpellEd</Form>
+    </DCCReference>
+    <DCCReference Include="Squish.pas" />
+    <DCCReference Include="SurfaceUtils.pas" />
+    <DCCReference Include="uAbout.pas">
+      <Form>FrmAbout</Form>
+    </DCCReference>
+    <DCCReference Include="UConsole.pas">
+      <Form>FrmCon</Form>
+    </DCCReference>
+    <DCCReference Include="udda.pas" />
+    <DCCReference Include="uEditDda.pas">
+      <Form>FrmClEdit</Form>
+    </DCCReference>
+    <DCCReference Include="uImpExp.pas" />
+    <DCCReference Include="uPalUnit.pas">
+      <Form>FrmPal</Form>
+    </DCCReference>
+    <DCCReference Include="uSurfEdit.pas">
+      <Form>FrmSurfEdit</Form>
+    </DCCReference>
+  </ItemGroup>
+</Project>

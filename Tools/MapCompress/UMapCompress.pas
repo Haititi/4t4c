@@ -226,11 +226,6 @@ begin
 
  Memo.Lines.Add('Computing .dat ...');
  ComputeMultiDat(ShortName);
-          {
- assignfile(fic,ShortName+'.dat');
- rewrite(fic,4);
- blockwrite(fic,mapid[0],8192);
- closefile(fic);    }
 
  //linearize memory before compression
  for j:=0 to 3071 do

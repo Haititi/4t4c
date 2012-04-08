@@ -112,7 +112,7 @@ void TSkinLoader::Initialize(void)
 		for (unsigned long j=0;j<MonsterSkinArray[i].AtkSoundCount;j++)
 		{
 			MonsterSkinArray[i].AtkSounds[j].SoundName=FstMonst.ReadWordString();
-			MonsterSkinArray[i].AtkSounds[j].SndObj=SoundEngine->GetSoundObject(MonsterSkinArray[i].AtkSounds[j].SoundName);
+			MonsterSkinArray[i].AtkSounds[j].SndObj=SoundEngine.GetSoundObject(MonsterSkinArray[i].AtkSounds[j].SoundName);
 			MonsterSkinArray[i].AtkSounds[j].PitchDev=FstMonst.ReadFloat();
 		}
 		MonsterSkinArray[i].HitSndCount=FstMonst.ReadLong();
@@ -120,7 +120,7 @@ void TSkinLoader::Initialize(void)
 		for (unsigned long j=0;j<MonsterSkinArray[i].HitSndCount;j++)
 		{
 			MonsterSkinArray[i].HitSounds[j].SoundName=FstMonst.ReadWordString();
-			MonsterSkinArray[i].HitSounds[j].SndObj=SoundEngine->GetSoundObject(MonsterSkinArray[i].HitSounds[j].SoundName);
+			MonsterSkinArray[i].HitSounds[j].SndObj=SoundEngine.GetSoundObject(MonsterSkinArray[i].HitSounds[j].SoundName);
 			MonsterSkinArray[i].HitSounds[j].PitchDev=FstMonst.ReadFloat();
 		}
 		MonsterSkinArray[i].DieSndCount=FstMonst.ReadLong();
@@ -128,7 +128,7 @@ void TSkinLoader::Initialize(void)
 		for (unsigned long j=0;j<MonsterSkinArray[i].DieSndCount;j++)
 		{
 			MonsterSkinArray[i].DieSounds[j].SoundName=FstMonst.ReadWordString();
-			MonsterSkinArray[i].DieSounds[j].SndObj=SoundEngine->GetSoundObject(MonsterSkinArray[i].DieSounds[j].SoundName);
+			MonsterSkinArray[i].DieSounds[j].SndObj=SoundEngine.GetSoundObject(MonsterSkinArray[i].DieSounds[j].SoundName);
 			MonsterSkinArray[i].DieSounds[j].PitchDev=FstMonst.ReadFloat();
 		}
 		MonsterSkinArray[i].IdleSndCount=FstMonst.ReadLong();
@@ -136,7 +136,7 @@ void TSkinLoader::Initialize(void)
 		for (unsigned long j=0;j<MonsterSkinArray[i].IdleSndCount;j++)
 		{
 			MonsterSkinArray[i].IdleSounds[j].SoundName=FstMonst.ReadWordString();
-			MonsterSkinArray[i].IdleSounds[j].SndObj=SoundEngine->GetSoundObject(MonsterSkinArray[i].IdleSounds[j].SoundName);
+			MonsterSkinArray[i].IdleSounds[j].SndObj=SoundEngine.GetSoundObject(MonsterSkinArray[i].IdleSounds[j].SoundName);
 			MonsterSkinArray[i].IdleSounds[j].PitchDev=FstMonst.ReadFloat();
 		}
 

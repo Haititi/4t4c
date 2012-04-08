@@ -1,7 +1,7 @@
 #ifndef SKINLOADER_H
 #define SKINLOADER_H
 
-#include <windows.h>
+#include "Headers.h"
 #include "HashPool.h"
 #include "SkinTypes.h"
 

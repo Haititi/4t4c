@@ -1,6 +1,5 @@
 #include "HashPool.h"
 #include "hash.h"
-#include <stdlib.h>
 
 THashPool::THashPool(unsigned long PoolSize)
 {
@@ -144,24 +143,30 @@ bool THashPool::IsObjectValid(void* Data)
 	//TODO To Implement
 	return true;
 };
-		
-void THashPool::ResetCycling(void)
+
+void THashPool::InitIterator(THashIterator &It)
 {
-	CycleIt=0;
-	CycleObj=HashList[0];
+	It.Parent=this;
+	It.ResetCycling();
 };
 		
-void* THashPool::GetNextEntry(void)
+void THashIterator::ResetCycling(void)
+{
+	CycleIt=0;
+	CycleObj=Parent->HashList[0];
+};
+		
+void* THashIterator::GetNextEntry(void)
 {
 	//void* Result=0;
 	ActualData=0;
 
-	while ((ActualData==0) && (CycleIt!=(HashSize-1)))
+	while ((ActualData==0) && (CycleIt!=(Parent->HashSize-1)))
 	{
 		if (CycleObj==0)
 		{
 			CycleIt++;
-			CycleObj=HashList[CycleIt];
+			CycleObj=Parent->HashList[CycleIt];
 		} else
 		{
 			ActualData=CycleObj->Data;

@@ -1,5 +1,4 @@
 #include "Hash.h"
-#include <string.h>
 
 static unsigned long RndTable[256];
 bool Initialized=false;

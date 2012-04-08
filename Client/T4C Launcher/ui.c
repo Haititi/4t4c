@@ -792,9 +792,9 @@ static void Language_Load (void)
 
    // depending on the language we're supposed to read, open the right file
    if (config.options_language == LANGUAGE_FRENCH)
-      SAFE_snprintf (string_data, sizeof (string_data), "%s\\frenchgui.elng", app_path);
+      SAFE_snprintf (string_data, sizeof (string_data), "%s\\french.elng", app_path);
    else
-      SAFE_snprintf (string_data, sizeof (string_data), "%s\\englishgui.elng", app_path);
+      SAFE_snprintf (string_data, sizeof (string_data), "%s\\english.elng", app_path);
 
    // open the right file
    if (fopen_s (&fp, string_data, "rb") != 0)
@@ -810,77 +810,77 @@ static void Language_Load (void)
          continue; // discard invalid lines
 
       // pick up those we are interested in
-      if (string_id == 226)
+      if (string_id == 1226)
          SAFE_strncpy (texts.mainwindow_title, string_data, sizeof (texts.mainwindow_title));
-      else if (string_id == 227)
+      else if (string_id == 1227)
          SAFE_strncpy (texts.login, string_data, sizeof (texts.login));
-      else if (string_id == 228)
+      else if (string_id == 1228)
          SAFE_strncpy (texts.password, string_data, sizeof (texts.password));
-      else if (string_id == 229)
+      else if (string_id == 1229)
          SAFE_strncpy (texts.button_play, string_data, sizeof (texts.button_play));
-      else if (string_id == 230)
+      else if (string_id == 1230)
          SAFE_strncpy (texts.button_setup, string_data, sizeof (texts.button_setup));
-      else if (string_id == 231)
+      else if (string_id == 1231)
          SAFE_strncpy (texts.setupwindow_title, string_data, sizeof (texts.setupwindow_title));
-      else if (string_id == 232)
+      else if (string_id == 1232)
          SAFE_strncpy (texts.keyboard_shortcuts, string_data, sizeof (texts.keyboard_shortcuts));
-      else if (string_id == 233)
+      else if (string_id == 1233)
          SAFE_strncpy (texts.shortcut_inventory, string_data, sizeof (texts.shortcut_inventory));
-      else if (string_id == 234)
+      else if (string_id == 1234)
          SAFE_strncpy (texts.shortcut_charactersheet, string_data, sizeof (texts.shortcut_charactersheet));
-      else if (string_id == 235)
+      else if (string_id == 1235)
          SAFE_strncpy (texts.shortcut_chatterchannels, string_data, sizeof (texts.shortcut_chatterchannels));
-      else if (string_id == 236)
+      else if (string_id == 1236)
          SAFE_strncpy (texts.shortcut_groupsheet, string_data, sizeof (texts.shortcut_groupsheet));
-      else if (string_id == 237)
+      else if (string_id == 1237)
          SAFE_strncpy (texts.shortcut_spellbook, string_data, sizeof (texts.shortcut_spellbook));
-      else if (string_id == 238)
+      else if (string_id == 1238)
          SAFE_strncpy (texts.shortcut_macros, string_data, sizeof (texts.shortcut_macros));
-      else if (string_id == 239)
+      else if (string_id == 1239)
          SAFE_strncpy (texts.shortcut_exchange, string_data, sizeof (texts.shortcut_exchange));
-      else if (string_id == 240)
+      else if (string_id == 1240)
          SAFE_strncpy (texts.shortcut_options, string_data, sizeof (texts.shortcut_options));
-      else if (string_id == 241)
+      else if (string_id == 1241)
          SAFE_strncpy (texts.shortcut_screenshot, string_data, sizeof (texts.shortcut_screenshot));
-      else if (string_id == 242)
+      else if (string_id == 1242)
          SAFE_strncpy (texts.shortcut_bigchatwindow, string_data, sizeof (texts.shortcut_bigchatwindow));
-      else if (string_id == 243)
+      else if (string_id == 1243)
          SAFE_strncpy (texts.shortcut_areamap, string_data, sizeof (texts.shortcut_areamap));
-      else if (string_id == 244)
+      else if (string_id == 1244)
          SAFE_strncpy (texts.shortcut_attackmode, string_data, sizeof (texts.shortcut_attackmode));
-      else if (string_id == 245)
+      else if (string_id == 1245)
          SAFE_strncpy (texts.saved_accounts, string_data, sizeof (texts.saved_accounts));
-      else if (string_id == 246)
+      else if (string_id == 1246)
          SAFE_strncpy (texts.button_add, string_data, sizeof (texts.button_add));
-      else if (string_id == 247)
+      else if (string_id == 1247)
          SAFE_strncpy (texts.button_delete, string_data, sizeof (texts.button_delete));
-      else if (string_id == 248)
+      else if (string_id == 1248)
          SAFE_strncpy (texts.display_options, string_data, sizeof (texts.display_options));
-      else if (string_id == 249)
+      else if (string_id == 1249)
          SAFE_strncpy (texts.display_hinttext, string_data, sizeof (texts.display_hinttext));
-      else if (string_id == 250)
+      else if (string_id == 1250)
          SAFE_strncpy (texts.screen_resolution, string_data, sizeof (texts.screen_resolution));
-      else if (string_id == 251)
+      else if (string_id == 1251)
          SAFE_strncpy (texts.resolution_large, string_data, sizeof (texts.resolution_large));
-      else if (string_id == 252)
+      else if (string_id == 1252)
          SAFE_strncpy (texts.resolution_medium, string_data, sizeof (texts.resolution_medium));
-      else if (string_id == 253)
+      else if (string_id == 1253)
          SAFE_strncpy (texts.resolution_small, string_data, sizeof (texts.resolution_small));
-      else if (string_id == 254)
+      else if (string_id == 1254)
          SAFE_strncpy (texts.fullscreen, string_data, sizeof (texts.fullscreen));
-      else if (string_id == 255)
+      else if (string_id == 1255)
          SAFE_strncpy (texts.keep_proportions, string_data, sizeof (texts.keep_proportions));
-      else if (string_id == 256)
+      else if (string_id == 1256)
          SAFE_strncpy (texts.wait_vsync, string_data, sizeof (texts.wait_vsync));
-      else if (string_id == 257)
+      else if (string_id == 1257)
          SAFE_strncpy (texts.cc_colors, string_data, sizeof (texts.cc_colors));
-      else if (string_id == 258)
+      else if (string_id == 1258)
          SAFE_strncpy (texts.button_pickupcolor, string_data, sizeof (texts.button_pickupcolor));
-      else if (string_id == 259)
+      else if (string_id == 1259)
          SAFE_strncpy (texts.colors_total, string_data, sizeof (texts.colors_total));
-      else if (string_id == 260)
+      else if (string_id == 1260)
          SAFE_strncpy (texts.button_ok, string_data, sizeof (texts.button_ok));
-      else if (string_id == 261)
+      else if (string_id == 1261)
          SAFE_strncpy (texts.button_cancel, string_data, sizeof (texts.button_cancel));
    }
 

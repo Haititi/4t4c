@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <memory.h>
 #include "FastStream.h"
 
 

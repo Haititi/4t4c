@@ -29,18 +29,11 @@ TNetworkCore::TNetworkCore(void):WaitingForAckPool(109),FragmentList(109)
 	{
 		throw; //waip 
 	}
-
-	InitializeCriticalSection(&CritSectInPack);
-	InitializeCriticalSection(&CritSectPrepareList);
-	InitializeCriticalSection(&CritSectWaitAck);
 };
 
 TNetworkCore::~TNetworkCore(void)
 {
 	Terminate();
-	DeleteCriticalSection(&CritSectInPack);
-	DeleteCriticalSection(&CritSectPrepareList);
-	DeleteCriticalSection(&CritSectWaitAck);
 };
 
 
@@ -104,25 +97,20 @@ void TNetworkCore::Connect(void)
 
 void TNetworkCore::StoreInputPacket(TPacket* Packet)
 {
-	EnterCriticalSection(&CritSectInPack);
-	
+	ScopedLock Al(LockInPack);
 	InputPackList.push_back(Packet); //Ready for consumption
-
-	LeaveCriticalSection(&CritSectInPack);
 };
 
 TPacket* TNetworkCore::GetNextPacket(void)
 {
-	EnterCriticalSection(&CritSectInPack);
-	
+	ScopedLock Al(LockInPack);
+
 	TPacket* Packet=0;
 	if (!InputPackList.empty())
 	{
 		Packet=InputPackList.back(); //Ready for consumption
 		InputPackList.pop_back();
 	}
-
-	LeaveCriticalSection(&CritSectInPack);
 	return Packet;
 };
 
@@ -149,17 +137,18 @@ void TNetworkCore::ThreadReceive(void)
 			//received something, reset timeout
 			WaitTimeoutTime=0;
 		} else
-		if (BufferLength<0)
-		{
-			//receive error
-		}
+			if (BufferLength<0)
+			{
+				//receive error
+			}
 	}
 };
-	
+
 
 void TNetworkCore::Acknowledge(const unsigned short UniqueID,const unsigned short FragmentNum,const unsigned long TimeStamp)
 {
-	EnterCriticalSection(&CritSectWaitAck);
+	ScopedLock Al(LockWaitAck);
+
 	TDatagramBuffer* DtgBuf=(TDatagramBuffer*)WaitingForAckPool.GetEntry(FragHash(UniqueID,FragmentNum));
 	if (DtgBuf!=0)
 	{
@@ -175,7 +164,6 @@ void TNetworkCore::Acknowledge(const unsigned short UniqueID,const unsigned shor
 		//remove it
 		WaitingForAckPool.RemoveItem(FragHash(UniqueID,FragmentNum));
 	}
-	LeaveCriticalSection(&CritSectWaitAck);
 };
 
 void TNetworkCore::UseInputBuffer(TDatagramBuffer* DatagramBuf)
@@ -189,7 +177,7 @@ void TNetworkCore::UseInputBuffer(TDatagramBuffer* DatagramBuf)
 	}
 	//check the header
 	TDatagramHeader* DataHeader=(TDatagramHeader*)(DatagramBuf->Buffer);
-	
+
 	if (DataHeader->Ack==1)
 	{
 		//This is an Ack, search for the correlated Datagram
@@ -203,9 +191,10 @@ void TNetworkCore::UseInputBuffer(TDatagramBuffer* DatagramBuf)
 	TDataGram* AckDatagram=new TDataGram();
 	AckDatagram->BuildAck(DataHeader->UniqueID,DataHeader->FragmentNumber);
 
-	EnterCriticalSection(&CritSectPrepareList);
-	PreparationList.push_back(AckDatagram);
-	LeaveCriticalSection(&CritSectPrepareList);
+	{
+		ScopedLock Al(LockPrepareList);
+		PreparationList.push_back(AckDatagram);
+	}
 
 
 	TDataGram* Datagram=0;
@@ -243,7 +232,7 @@ void TNetworkCore::UseInputBuffer(TDatagramBuffer* DatagramBuf)
 	while ((Packet=Datagram->GetPacket())!=0)
 		StoreInputPacket(Packet);
 
-	
+
 	//we don't need it anymore (or it's bad)
 	delete Datagram;
 };
@@ -261,73 +250,73 @@ void TNetworkCore::ThreadSend(void)
 		Sleep(PakAggloWaitTime); 
 
 		//cycle through preparation list and send
-		EnterCriticalSection(&CritSectPrepareList);
-
-		if (PreparationList.size()==0)
 		{
-			WaitTimeoutTime+=PakAggloWaitTime;
-			if (WaitTimeoutTime>(ClientTimeOut>>1))
+			ScopedLock Al(LockPrepareList);
+
+			if (PreparationList.size()==0)
 			{
-				if (WaitTimeoutTime<ClientTimeOut)
+				WaitTimeoutTime+=PakAggloWaitTime;
+				if (WaitTimeoutTime>(ClientTimeOut>>1))
 				{
-					//send a keepalive
-				//	OutputDebugStringA("Sent Keep Alive.\r\n");
-					SendPacket(new TPacket(RQ_KeepAlive));
-				}else
-				{
-					//We Timed out !!!
-					//TODO Do somethign here...
-				}
-			}
-		}
-
-		//for each datagram
-		for (unsigned int i=0; i< PreparationList.size();i++)
-		{
-			//gather one datagram and prepare it
-			TDataGram* Dtg=PreparationList[i];
-			Dtg->PrepareDatagram();
-
-			TDatagramBuffer* DtgBuf;
-			//cycle trough all buffers
-			while (	(DtgBuf=Dtg->GetNextBuffer())!=0 )
-			{
-				DtgBuf->TimeStamp=GetTickCount();//Setup the timestamp
-				//send it
-				sendto(TheSocket,(char*)DtgBuf->Buffer,DtgBuf->BufferLength,0,(sockaddr*)&SendSockAddr,SockLen);
-
-				//if it's not an ack store it in the waiting for ack list
-				if (DtgBuf->BufferLength>DataGramHeaderSize)
-				{
-					TDatagramHeader* Hdr=(TDatagramHeader*)DtgBuf->Buffer;
-					EnterCriticalSection(&CritSectWaitAck);
-					WaitingForAckPool.AddHashEntry(FragHash(Hdr->UniqueID,Hdr->FragmentNumber),DtgBuf);
-					LeaveCriticalSection(&CritSectWaitAck);
-				} else
-				{
-					//just delete it otherwise
-					delete DtgBuf;
+					if (WaitTimeoutTime<ClientTimeOut)
+					{
+						//send a keepalive
+						//	OutputDebugStringA("Sent Keep Alive.\r\n");
+						SendPacket(new TPacket(RQ_KeepAlive));
+					}else
+					{
+						//We Timed out !!!
+						//TODO Do somethign here...
+					}
 				}
 			}
 
-			//destroy the TDatagram
-			delete Dtg; 
-		}
-		//we consummed everything, clear the list
-		PreparationList.clear();
+			//for each datagram
+			for (unsigned int i=0; i< PreparationList.size();i++)
+			{
+				//gather one datagram and prepare it
+				TDataGram* Dtg=PreparationList[i];
+				Dtg->PrepareDatagram();
 
-		LeaveCriticalSection(&CritSectPrepareList);
+				TDatagramBuffer* DtgBuf;
+				//cycle trough all buffers
+				while (	(DtgBuf=Dtg->GetNextBuffer())!=0 )
+				{
+					DtgBuf->TimeStamp=GetTickCount();//Setup the timestamp
+					//send it
+					sendto(TheSocket,(char*)DtgBuf->Buffer,DtgBuf->BufferLength,0,(sockaddr*)&SendSockAddr,SockLen);
+
+					//if it's not an ack store it in the waiting for ack list
+					if (DtgBuf->BufferLength>DataGramHeaderSize)
+					{
+						TDatagramHeader* Hdr=(TDatagramHeader*)DtgBuf->Buffer;
+						ScopedLock Al(LockWaitAck);
+						WaitingForAckPool.AddHashEntry(FragHash(Hdr->UniqueID,Hdr->FragmentNumber),DtgBuf);
+					} else
+					{
+						//just delete it otherwise
+						delete DtgBuf;
+					}
+				}
+
+				//destroy the TDatagram
+				delete Dtg; 
+			}
+			//we consummed everything, clear the list
+			PreparationList.clear();
+		} //autolock End
 
 		//check for datagrambuf without received ack
 		//we don't check every iteration, useless
 		unsigned long ActualTime=GetTickCount(); 
 		if ((CheckAckCounter++%4)==0)
 		{
-			EnterCriticalSection(&CritSectWaitAck);
-			WaitingForAckPool.ResetCycling();
-			while(WaitingForAckPool.GetNextEntry()!=0)
+			ScopedLock Al(LockWaitAck);
+			THashIterator AckIt;
+			WaitingForAckPool.InitIterator(AckIt);
+			while(AckIt.GetNextEntry()!=0)
 			{
-				TDatagramBuffer* DtgBuf=(TDatagramBuffer*)WaitingForAckPool.GetActualEntry();
+				TDatagramBuffer* DtgBuf=(TDatagramBuffer*)AckIt.GetActualEntry();
 				if ((ActualTime-DtgBuf->TimeStamp)>200)
 				{
 					DtgBuf->Retries++;
@@ -342,9 +331,7 @@ void TNetworkCore::ThreadSend(void)
 						delete DtgBuf;
 					} 
 				}
-
 			}
-			LeaveCriticalSection(&CritSectWaitAck);
 		}
 	}
 };
@@ -353,7 +340,7 @@ void TNetworkCore::SendPacket(TPacket* Packet)
 {
 	//scan the list of datagram and find and appropriate one to store the packet
 	//if not possible, make a new datagram
-	EnterCriticalSection(&CritSectPrepareList);
+	ScopedLock Al(LockPrepareList);
 
 	//cycle through datagrams
 	bool Added=false;
@@ -378,8 +365,6 @@ void TNetworkCore::SendPacket(TPacket* Packet)
 		Dtg->AddPacket(Packet);
 		PreparationList.push_back(Dtg);
 	}
-
-	LeaveCriticalSection(&CritSectPrepareList);
 }; 
 
 bool TNetworkCore::IsConnectionAlive(void)
@@ -387,7 +372,7 @@ bool TNetworkCore::IsConnectionAlive(void)
 	//TODO Write the function..
 	return true;
 };
-	
+
 bool TNetworkCore::SlowTraffic(void)
 {
 	//TODO Write the function..

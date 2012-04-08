@@ -1,7 +1,8 @@
 #ifndef NETCLI_H
 #define NETCLI_H
 
-#include <winsock.h>
+#include "Headers.h"
+#include "Lock.h"
 #include "Datagram.h"
 #include "Packet.h"
 #include "../hashpool.h"
@@ -29,7 +30,7 @@ private:
 
 	void UseInputBuffer(TDatagramBuffer* DatagramBuf);
 
-	CRITICAL_SECTION CritSectInPack;
+	CriticalSection LockInPack;
 	std::vector<TPacket*> InputPackList;
 	void StoreInputPacket(TPacket* Packet);
 
@@ -37,11 +38,11 @@ private:
 	THashPool FragmentList; //hashlist of TDatagram
 
 
-	CRITICAL_SECTION CritSectWaitAck;
+	CriticalSection LockWaitAck;
 	THashPool WaitingForAckPool; //Hashlist of TDatagramBuf
 
 	//Datagram being prepared
-	CRITICAL_SECTION CritSectPrepareList;
+	CriticalSection LockPrepareList;
 	std::vector<TDataGram*> PreparationList;
 
 

@@ -1,7 +1,7 @@
 #ifndef MAPLOADER_H
 #define MAPLOADER_H
 
-#include <Windows.h>
+#include "Headers.h"
 #include "SpriteDatabase.h"
 //map types
 
@@ -83,7 +83,7 @@ class TMapLoader
 		TIndexArrItem IndexArray[24*24*2];
 		unsigned long ActualCacheIndex;
 
-		CRITICAL_SECTION MapGraphCritSect;  //used to protect access to MapIdInfo When Loading Take Place 
+		CriticalSection MapGraphLock;  //used to protect access to MapIdInfo When Loading Take Place 
 											//the map itself don't really need to be protected : it's a static array ...
 		bool LoadingFinished;  //true while loading
 		bool NeedMapLoad;

@@ -1,6 +1,5 @@
 #include "Packet.h"
 #include "PacketTypes.h"
-#include <windows.h>
 
 const unsigned int PackGranul=64;
 #define VoidAddr(Obj) (unsigned int*)((unsigned int)Obj)

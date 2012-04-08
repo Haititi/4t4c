@@ -1,7 +1,7 @@
 #ifndef PACKET_H
 #define PACKET_H
 
-#include <winsock.h>
+#include "Headers.h"
 //custom serialization class to build network pack
 
 //TODO move that somewhere else......

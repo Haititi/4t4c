@@ -3,7 +3,7 @@
 #include "Global.h"
 #include "debug.h"
 #include "Zlib.h"
-#include "./NewInterface/Chatterui.h"
+#include "./interface/Chatterui.h"
 #include "app.h"
 
 TMapLoader MapLoader;
@@ -40,7 +40,6 @@ TMapLoader::TMapLoader(void)
 		}
 	};
 	memset(&Map,0,3072*3072*2);
-	InitializeCriticalSection(&MapGraphCritSect);
 
 	//reading the mapnames
 	TFastStream Fst;
@@ -71,12 +70,11 @@ TMapLoader::~TMapLoader(void)
 	{
 		for (unsigned long i=0;i<MapCount;i++)
 		{
-			delete [] MapName[i].MapName;
+			if (MapName[i].MapName)
+				delete [] MapName[i].MapName;
 		};
 		delete []MapName;
 	}
-
-	DeleteCriticalSection(&MapGraphCritSect);
 };
 
 
@@ -315,7 +313,8 @@ void TMapLoader::WaitForLoadingThread(void)
 
 void TMapLoader::ChangePosition(int NewX,int NewY,int NewW)
 {
-	EnterCriticalSection(&MapGraphCritSect);
+	ScopedLock Al(MapGraphLock);
+
 	WaitForLoadingThread();
 	NeedMapLoad=false;
 	//world change?
@@ -343,7 +342,6 @@ void TMapLoader::ChangePosition(int NewX,int NewY,int NewW)
 			LoadMap();
 		};
 	}
-	LeaveCriticalSection(&MapGraphCritSect);
 };
 
 

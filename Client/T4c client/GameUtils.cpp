@@ -1,6 +1,4 @@
 #include "gameUtils.h"
-#define _USE_MATH_DEFINES
-#include <Math.h>
 
 float GetDistance(const int X1,const int Y1,const int X2,const int Y2)
 {

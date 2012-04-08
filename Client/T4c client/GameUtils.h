@@ -1,7 +1,7 @@
 #ifndef GAMEUTILS_H
 #define GAMEUTILS_H
 
-#include <stdlib.h>
+#include "Headers.h"
 #define Pi (float)3.1415926535
 #define Rad2Deg (float)180.0f/Pi
 #define PiDiv2 (float)Pi/2.0f

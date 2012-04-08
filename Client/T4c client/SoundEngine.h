@@ -41,26 +41,26 @@ typedef TWavHeader* PWavHeader;
 //new sound objects structs
 
 //internal sound info struct
-class TSoundObject;
+class SoundObject;
 
 const int MaxDuplicate=4;
 
 class TSoundInfo
 {
-	friend class TSoundObject;
+	friend class SoundObject;
 private:
 	LPDIRECTSOUNDBUFFER SoundBuffer;//primary sound buffer for that sound
 	bool SpinLock;
 	int DuplicateCount;
 	int DuplicateIndex;
 	std::vector<LPDIRECTSOUNDBUFFER> Duplicates;
-	std::list<TSoundObject*> SoundObjList; //keep a list for deallocation
+	std::list<SoundObject*> SoundObjList; //keep a list for deallocation
 
 	void Initialize(void);
 	void Uninitialize(void);
 	void Lock(void);
 	void Unlock(void);
-	void RemoveMe(TSoundObject*);
+	void RemoveMe(SoundObject*);
 public:
 	TSoundInfo(char* SndName);
 	~TSoundInfo(void);
@@ -70,7 +70,7 @@ public:
 		
 	//CRITICAL_SECTION CritSect; //maybe not needed , 
 	
-	TSoundObject* CreateSoundObject(void);
+	SoundObject* CreateSoundObject(void);
 	void CreateDuplicate(void);
 	void DestroyDuplicate(void);
 	LPDIRECTSOUNDBUFFER Play(float Vol,float Pan);
@@ -79,7 +79,7 @@ public:
 };
 typedef TSoundInfo* PSoundInfo;
 
-class TSoundObject
+class SoundObject
 {
 	friend class TSoundInfo;
 private:
@@ -89,10 +89,10 @@ private:
 	float Volume,Panoramic;
 	void SetRefToZero(void){Reference=0; Loaded=false;};
 
-	TSoundObject(PSoundInfo Ref);//private constructor, only a TSoundinfo can create that object
+	SoundObject(PSoundInfo Ref);//private constructor, only a TSoundinfo can create that object
 public:
 	
-	~TSoundObject(void);
+	~SoundObject(void);
 	void Play(void);
 	void Load(void);
 	void Unload(void);
@@ -146,7 +146,7 @@ public:
 	//void SetFx(int FxType); 
 	
 
-	TSoundObject* GetSoundObject(const char* SoundName);
+	SoundObject* GetSoundObject(const char* SoundName);
 };
 
 extern TSoundEngine SoundEngine;

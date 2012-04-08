@@ -35,8 +35,8 @@ TSoundInfo::TSoundInfo(char *SndName):SoundBuffer(0),DuplicateCount(0),Duplicate
 
 TSoundInfo::~TSoundInfo(void)
 {
-	//if we have some TSoundObject left we should signal to those that the ref is invalid
-	std::list<TSoundObject*>::iterator ObjIt;
+	//if we have some SoundObject left we should signal to those that the ref is invalid
+	std::list<SoundObject*>::iterator ObjIt;
 	for(ObjIt=SoundObjList.begin();ObjIt!=SoundObjList.end();ObjIt++)
 	{
 		(*ObjIt)->SetRefToZero();
@@ -120,9 +120,9 @@ void TSoundInfo::DestroyAll(void)
 	}
 };
 
-void TSoundInfo::RemoveMe(TSoundObject* Object)
+void TSoundInfo::RemoveMe(SoundObject* Object)
 {
-	std::list<TSoundObject*>::iterator ObjIt;
+	std::list<SoundObject*>::iterator ObjIt;
 	for(ObjIt=SoundObjList.begin();ObjIt!=SoundObjList.end();ObjIt++)
 	{
 		if ((*ObjIt)==Object)
@@ -133,9 +133,9 @@ void TSoundInfo::RemoveMe(TSoundObject* Object)
 	};
 };
 
-TSoundObject* TSoundInfo::CreateSoundObject(void)
+SoundObject* TSoundInfo::CreateSoundObject(void)
 {
-	TSoundObject* Result=new TSoundObject(this);
+	SoundObject* Result=new SoundObject(this);
 	SoundObjList.push_back(Result);
 	return Result;
 };
@@ -190,11 +190,11 @@ LPDIRECTSOUNDBUFFER TSoundInfo::Play(float Vol,float Pan)
 	return Buffer;
 };
 
-TSoundObject::TSoundObject(PSoundInfo Ref):Reference(Ref),Buffer(0),Loaded(false),Volume(1.0f),Panoramic(0.0f)
+SoundObject::SoundObject(PSoundInfo Ref):Reference(Ref),Buffer(0),Loaded(false),Volume(1.0f),Panoramic(0.0f)
 {
 };
 
-TSoundObject::~TSoundObject(void)
+SoundObject::~SoundObject(void)
 {
 	if (Reference ) 
 	{
@@ -203,7 +203,7 @@ TSoundObject::~TSoundObject(void)
 	Unload();
 };	
 
-void TSoundObject::Load(void)
+void SoundObject::Load(void)
 {
 	if (!Loaded && Reference)
 	{
@@ -212,7 +212,7 @@ void TSoundObject::Load(void)
 	}
 };
 
-void TSoundObject::Unload(void)
+void SoundObject::Unload(void)
 {
 	if (Loaded)
 	{
@@ -223,7 +223,7 @@ void TSoundObject::Unload(void)
 	}
 };
 
-void TSoundObject::Play(void)
+void SoundObject::Play(void)
 {
 	if (Loaded)
 		Buffer=Reference->Play(Volume,Panoramic);
@@ -413,7 +413,7 @@ bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg )
 	return true;
 }
 
-TSoundObject* TSoundEngine::GetSoundObject(const char* SoundName)
+SoundObject* TSoundEngine::GetSoundObject(const char* SoundName)
 {
 	PSoundInfo Info=(PSoundInfo)SoundPool.GetEntry(RandHash(SoundName));
 	if (Info!=0)

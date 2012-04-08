@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <WindowsX.h>
+#undef IsMinimized
 #include <stdlib.h>
 #include <winsock.h>
 
@@ -23,6 +24,7 @@
 
 #include <vector>
 #include <list>
+#include <set>
 #include <map>
 #include <string>
 #include <queue>

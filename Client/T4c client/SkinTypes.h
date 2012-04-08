@@ -3,7 +3,7 @@
 
 #include "SpriteDatabase.h"
 
-class TSoundObject;
+class SoundObject;
 
 struct TFrame
 {
@@ -29,7 +29,7 @@ struct TDirection
 struct TSkinSoundInfo
 {
 	char* SoundName;
-	TSoundObject* SndObj;
+	SoundObject* SndObj;
 	//PSoundBuf//link To the database corresponding sound
 	float PitchDev; //range of pitch modification
 };

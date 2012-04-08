@@ -50,16 +50,19 @@ const unsigned long TextJustify_Even=0; //take all space from right to left, blo
 
 class TD3dFont;
 
-enum TTextElemType
+struct ETextElemType
 {
-	TextElem_Character=0,
-	TextElem_Quad=1
+	enum Enum
+	{
+		Character=0,
+		Quad=1
+	};
 };
 
 struct TTextElem
 {
 public:
-	TTextElemType ElemType;
+	ETextElemType::Enum ElemType;
 	int Posx,Posy; //drawing offset
 	int Prm1,Prm2; //for Element others than text
 	char Chr; //the character to be drawn

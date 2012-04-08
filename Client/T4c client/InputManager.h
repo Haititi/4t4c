@@ -1,27 +1,31 @@
 #ifndef MOUSEDEVICE_H
 #define MOUSEDEVICE_H
 
-#include <windows.h>
-#include <vector>
+#include "Headers.h"
 #include "TSprite.h"
-#include "../newinterface/Events.h"
+#include "../interface/Events.h"
 #include "SkinLoader.h"
-
-//old defines for mouse lock
-#define DM_NONE  0
-#define DM_DOWN  1
-#define DM_CLICK  2
-#define DM_DOUBLE_CLICK  3
-#define DM_UP  4
-#define DM_DRAG  5
-#define DM_DROP  6
-
 
 struct TInputMessage
 {
-	unsigned int MessageType;
-	unsigned int Param1,Param2;
-	float TimeStamp;
+	const unsigned int MessageType;
+	const unsigned int Param1,Param2;
+	const float TimeStamp;
+	TInputMessage(const unsigned int pMessageType,const unsigned int pParam1,const unsigned int pParam2,const float pTimeStamp)
+		:MessageType(pMessageType),Param1(pParam1),Param2(pParam2),TimeStamp(pTimeStamp)
+	{};
+	TInputMessage(const TInputMessage& Ref)
+		:MessageType(Ref.MessageType),Param1(Ref.Param1),Param2(Ref.Param2),TimeStamp(Ref.TimeStamp)
+	{};
+	TInputMessage& operator=(const TInputMessage& Ref)
+	{
+		//HACK to copy const member
+		*(const_cast<unsigned int*>(&MessageType)) = Ref.MessageType;
+		*(const_cast<unsigned int*>(&Param1)) = Ref.Param1;
+		*(const_cast<unsigned int*>(&Param2)) = Ref.Param2;
+		*(const_cast<float*>(&TimeStamp)) = Ref.TimeStamp;
+		return *this;
+	};
 };
 
 struct TMouseState 
@@ -49,7 +53,7 @@ private:
 	float ButtonTimer[8]; //timers to calculate double click 
 
 
-	CRITICAL_SECTION InputCrit;
+	CriticalSection Lock;
 
 	TDragObject* DragObj;
 	bool Dragging;
@@ -89,6 +93,7 @@ private:
 	bool Correction;
 	int XCor;
 	int YCor;
+
 
 public:
 	TMouseCursor(void);

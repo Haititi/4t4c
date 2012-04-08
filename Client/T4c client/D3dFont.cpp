@@ -256,7 +256,7 @@ void TD3dText::AddCharToBuffer(const int Posx,const int Posy,const char Chr,cons
 	//TODO use 2 pointer list, transfer unused pointer to the second if unused to remove need for alloc?
 	TTextElem TextElem;
 
-	TextElem.ElemType=TextElem_Character;
+	TextElem.ElemType=ETextElemType::Character;
 	TextElem.Posx=Posx;
 	TextElem.Posy=Posy;
 	TextElem.Prm1=Italique;
@@ -270,7 +270,7 @@ void TD3dText::AddQuadToBuffer(const int Posx,const int Posy,const int SizeX,con
 {
 	TTextElem TextElem;
 
-	TextElem.ElemType=TextElem_Quad;
+	TextElem.ElemType=ETextElemType::Quad;
 	TextElem.Posx=Posx;
 	TextElem.Posy=Posy;
 	TextElem.Prm1=SizeX;
@@ -674,7 +674,7 @@ void TD3dFont::DrawTextElem(const int PosX,const int PosY,const TTextElem&  Text
 
 	switch (TextElem.ElemType)
 	{
-		case TextElem_Character:
+		case ETextElemType::Character:
 		{
 			TextQuadBuf[QuadCount][0].y=((float)(PosY+TextElem.Posy))-0.5f;
 			TextQuadBuf[QuadCount][1].y=TextQuadBuf[QuadCount][0].y;
@@ -705,7 +705,7 @@ void TD3dFont::DrawTextElem(const int PosX,const int PosY,const TTextElem&  Text
 			//GfxCore.DrawSprite(&Vertices,FontInfo->Texture);
 			break;
 		}
-		case TextElem_Quad:
+		case ETextElemType::Quad:
 		{
 			Xpos=(float)(PosX+TextElem.Posx);
 			Xpos-=0.5f;

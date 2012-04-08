@@ -5,8 +5,10 @@
 #include "FastStream.h"
 #include "hash.h"
 
-TSoundEngine *SoundEngine = NULL;
+TSoundEngine SoundEngine;
 const unsigned long HBufferSize=16384; //engine streaming buffer
+
+const char* GetDxSoundErrorDesc(const HRESULT Hr);
 
 TSoundInfo::TSoundInfo(char *SndName):SoundBuffer(0),DuplicateCount(0),DuplicateIndex(0),SpinLock(false)
 {
@@ -41,6 +43,7 @@ TSoundInfo::~TSoundInfo(void)
 	};
 };
 
+//HACK / TEST  simple  spinlock to ensure if sync is needed or not 
 void TSoundInfo::Lock(void)
 {
 	while(SpinLock==true)
@@ -74,7 +77,7 @@ void TSoundInfo::Initialize(void)
 	Format.wFormatTag=WAVE_FORMAT_PCM;
 	BufferDesc.lpwfxFormat=&Format;
 
-	if (SoundEngine->DirectSound->CreateSoundBuffer(&BufferDesc,&SoundBuffer,0)==DS_OK)
+	if (SoundEngine.DirectSound->CreateSoundBuffer(&BufferDesc,&SoundBuffer,0)==DS_OK)
 	{
 		//lock and load wave data
 		char FilePath[512];
@@ -147,7 +150,7 @@ void TSoundInfo::CreateDuplicate(void)
 		DuplicateCount++;
 		
 		LPDIRECTSOUNDBUFFER Dup;
-		SoundEngine->DirectSound->DuplicateSoundBuffer(SoundBuffer,&Dup);
+		SoundEngine.DirectSound->DuplicateSoundBuffer(SoundBuffer,&Dup);
 		Duplicates.push_back(Dup);
 	}
 	Unlock();
@@ -158,7 +161,7 @@ void TSoundInfo::DestroyDuplicate(void)
 	Lock();
 	//TODO FIX  we should not have to check if the soundengine is down
 	//at that time the object should already be empty,  logic error somewhere
-	if ((DuplicateCount>0) && (SoundEngine!=0)) 
+	if (DuplicateCount>0) 
 	{
 
 		LPDIRECTSOUNDBUFFER Buf=Duplicates.back();
@@ -180,7 +183,7 @@ LPDIRECTSOUNDBUFFER TSoundInfo::Play(float Vol,float Pan)
 	DuplicateIndex=(DuplicateIndex+1)%DuplicateCount;
 	LPDIRECTSOUNDBUFFER Buffer=Duplicates[DuplicateIndex];
 	Buffer->Stop();
-	Buffer->SetVolume((long)(-10000.0f*(1.0f-(Vol*SoundEngine->SoundVolume))));
+	Buffer->SetVolume((long)(-10000.0f*(1.0f-(Vol*SoundEngine.SoundVolume))));
 	Buffer->SetPan((long)(Pan*10000.0f));
 	Buffer->Play(0,0,0);
 	Unlock();
@@ -193,14 +196,11 @@ TSoundObject::TSoundObject(PSoundInfo Ref):Reference(Ref),Buffer(0),Loaded(false
 
 TSoundObject::~TSoundObject(void)
 {
-	if (SoundEngine) //in case it's too late to deallocate
+	if (Reference ) 
 	{
-		if (Reference ) 
-		{
-			Reference->RemoveMe(this);
-		}
-		Unload();
+		Reference->RemoveMe(this);
 	}
+	Unload();
 };	
 
 void TSoundObject::Load(void)
@@ -231,8 +231,6 @@ void TSoundObject::Play(void)
 
 TSoundEngine::TSoundEngine(void):SoundPool(199)
 {
-	InitializeCriticalSection(&CritSect);
-	InitializeCriticalSection(&OggCrit);
 	hEvent = 0;
 	DirectSound = 0;
 	OggTerminated=false;
@@ -274,13 +272,14 @@ TSoundEngine::~TSoundEngine(void)
 	CloseHandle(OggNotifyHdl[1]);
 
 	//destroying SoundInfoBuf and dup
-	SoundPool.ResetCycling();
-	PSoundInfo Info=(PSoundInfo)SoundPool.GetNextEntry();
+	THashIterator SndPoolIt;
+	SoundPool.InitIterator(SndPoolIt);
+	PSoundInfo Info=(PSoundInfo)SndPoolIt.GetNextEntry();
 	while(Info!=0)
 	{
 		Info->DestroyAll();
 		delete Info;
-		Info=(PSoundInfo)SoundPool.GetNextEntry();
+		Info=(PSoundInfo)SndPoolIt.GetNextEntry();
 	}
 	
 	//destroy primary
@@ -290,8 +289,6 @@ TSoundEngine::~TSoundEngine(void)
 		Primary->Release();
 	}
 
-	DeleteCriticalSection(&CritSect);
-	DeleteCriticalSection(&OggCrit);
 	CloseHandle(hEvent);
 	DirectSound->Release();
 }
@@ -299,104 +296,80 @@ TSoundEngine::~TSoundEngine(void)
 
 long WINAPI OggThreadRoutine(TSoundEngine* Arg)
 {
-	return (SoundEngine->OggThread());
+	return (Arg->OggThread());
 };
 
-#define LOGDSERR( dserr ) case dserr: errMsg += #dserr; break;
-bool TSoundEngine::Create( HWND hWnd, std::string &errMsg ) 
+bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg ) 
 {
-	SoundEngine = this;
-
-	DSBUFFERDESC  dsbdesc;
-	WAVEFORMATEX wfmtx;
+	DSBUFFERDESC BufferDesc;
+	WAVEFORMATEX WaveFmt;
 
 	
 	HRESULT hr = DirectSoundCreate8(0, &DirectSound, 0);
 
 	if (hr!=DS_OK)
 	{
-		errMsg = "DirectSoundCreate was not sucessful: hr=";
-		switch( hr )
-		{
-			LOGDSERR( DSERR_ALLOCATED );
-			LOGDSERR( DSERR_INVALIDPARAM );
-			LOGDSERR( DSERR_NOAGGREGATION );
-			LOGDSERR( DSERR_NODRIVER );
-			LOGDSERR( DSERR_OUTOFMEMORY );
-		default:
-			char buf[ 20 ];
-			_itoa_s( hr, buf,20, 10 );
-			errMsg += "Unknown value ";
-			errMsg += buf;
-			break;
-		}        
+		ErrMsg = "DirectSoundCreate was not sucessful: ";
+		ErrMsg+=GetDxSoundErrorDesc(hr);
+		LOG(ErrMsg);
 		return false;
 	}
 
 	DirectSound->SetCooperativeLevel(hWnd, DSSCL_PRIORITY);
 
-	wfmtx.wFormatTag = WAVE_FORMAT_PCM;
-	wfmtx.nChannels = 2;
-	wfmtx.nSamplesPerSec = 44100;
-	wfmtx.wBitsPerSample = 16;
-	wfmtx.nBlockAlign = (wfmtx.wBitsPerSample >> 3)*wfmtx.nChannels;
-	wfmtx.nAvgBytesPerSec = wfmtx.nSamplesPerSec * wfmtx.nBlockAlign;
+	WaveFmt.wFormatTag = WAVE_FORMAT_PCM;
+	WaveFmt.nChannels = 2;
+	WaveFmt.nSamplesPerSec = 44100;
+	WaveFmt.wBitsPerSample = 16;
+	WaveFmt.nBlockAlign = (WaveFmt.wBitsPerSample >> 3)*WaveFmt.nChannels;
+	WaveFmt.nAvgBytesPerSec = WaveFmt.nSamplesPerSec * WaveFmt.nBlockAlign;
 	
-	wfmtx.cbSize = 0;
+	WaveFmt.cbSize = 0;
 
-	memset(&dsbdesc, 0, sizeof(DSBUFFERDESC));
-	dsbdesc.dwSize        = sizeof(DSBUFFERDESC);
-	dsbdesc.dwFlags       = DSBCAPS_PRIMARYBUFFER;
-	dsbdesc.dwBufferBytes = 0;
-	dsbdesc.lpwfxFormat   = NULL;
-	dsbdesc.guid3DAlgorithm = DS3DALG_DEFAULT;
+	memset(&BufferDesc, 0, sizeof(DSBUFFERDESC));
+	BufferDesc.dwSize        = sizeof(DSBUFFERDESC);
+	BufferDesc.dwFlags       = DSBCAPS_PRIMARYBUFFER;
+	BufferDesc.dwBufferBytes = 0;
+	BufferDesc.lpwfxFormat   = NULL;
+	BufferDesc.guid3DAlgorithm = DS3DALG_DEFAULT;
 
-	hr = DirectSound->CreateSoundBuffer(&dsbdesc, &Primary, NULL);
+	hr = DirectSound->CreateSoundBuffer(&BufferDesc, &Primary, NULL);
 	if( hr != DS_OK )
 	{
-		errMsg = "Could not create primary sound buffer. hr=";
-		switch( hr )
-		{
-			LOGDSERR( DSERR_ALLOCATED )
-				LOGDSERR( DSERR_CONTROLUNAVAIL )
-				LOGDSERR( DSERR_BADFORMAT )
-				LOGDSERR( DSERR_INVALIDPARAM )
-				LOGDSERR( DSERR_NOAGGREGATION )  
-				LOGDSERR( DSERR_OUTOFMEMORY )
-				LOGDSERR( DSERR_UNINITIALIZED )
-				LOGDSERR( DSERR_UNSUPPORTED )
-	   default:
-		   char buf[ 20 ];
-		   _itoa_s( hr, buf,20, 10 );
-		   errMsg += "Unknown value ";
-		   errMsg += buf;
-		   break;
-		}
+		ErrMsg="SoundEngine : Could not create primary sound buffer : ";
+		ErrMsg+=GetDxSoundErrorDesc(hr);
+		LOG(ErrMsg);
 		return false;
 	}
 
-	Primary->SetFormat(&wfmtx);
+	Primary->SetFormat(&WaveFmt);
 
 	hr=Primary->Play(0,0,DSBPLAY_LOOPING);
 	if (hr!=DS_OK)
 	{
-		LOG("SoundEngine (Fatal Error) : Primary->Play "<< GetDxSoundErrorDesc(hr) << "\r\n"); 
+		ErrMsg="SoundEngine (Fatal Error) : Primary->Play : ";
+		ErrMsg+=GetDxSoundErrorDesc(hr); 
+		LOG(ErrMsg);
+		return false;
 	}
 
-	memset(&dsbdesc, 0, sizeof(DSBUFFERDESC));
-	dsbdesc.dwSize        = sizeof(DSBUFFERDESC);
-	dsbdesc.dwFlags       = DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPOSITIONNOTIFY;;
-	dsbdesc.dwBufferBytes = (HBufferSize/2)*wfmtx.nBlockAlign;;
-	dsbdesc.lpwfxFormat   = &wfmtx;
-	dsbdesc.guid3DAlgorithm = DS3DALG_DEFAULT;
+	memset(&BufferDesc, 0, sizeof(DSBUFFERDESC));
+	BufferDesc.dwSize        = sizeof(DSBUFFERDESC);
+	BufferDesc.dwFlags       = DSBCAPS_GLOBALFOCUS | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPOSITIONNOTIFY;;
+	BufferDesc.dwBufferBytes = (HBufferSize/2)*WaveFmt.nBlockAlign;;
+	BufferDesc.lpwfxFormat   = &WaveFmt;
+	BufferDesc.guid3DAlgorithm = DS3DALG_DEFAULT;
 
-	DirectSound->CreateSoundBuffer(&dsbdesc, &OggBuffer, NULL);
+	DirectSound->CreateSoundBuffer(&BufferDesc, &OggBuffer, NULL);
 
 
 	hr=OggBuffer->QueryInterface(IID_IDirectSoundNotify,(void**)&OggNotify);
 	if (hr!=DS_OK)
 	{
-		LOG("SoundEngine (Fatal Error) : OggBuffer->QueryInterface -> "<< GetDxSoundErrorDesc(hr) <<"\r\n");
+		ErrMsg="SoundEngine (Fatal Error) : OggBuffer->QueryInterface :";
+		ErrMsg+=GetDxSoundErrorDesc(hr);
+		LOG(ErrMsg);
+		return false;
 	}
 
 	OggStopStream=CreateEvent(NULL,true,true,NULL);
@@ -414,7 +387,10 @@ bool TSoundEngine::Create( HWND hWnd, std::string &errMsg )
 	hr=OggNotify->SetNotificationPositions(2,PosNotify);
 	if (hr!=DS_OK)
 	{
-		LOG("SoundEngine (Error): SetNotificationPositions -> " << GetDxSoundErrorDesc(hr) << "\r\n");
+		ErrMsg="SoundEngine (Error): SetNotificationPositions : ";
+		ErrMsg+=GetDxSoundErrorDesc(hr);
+		LOG(ErrMsg);
+		return false;
 	}
 
 
@@ -422,7 +398,10 @@ bool TSoundEngine::Create( HWND hWnd, std::string &errMsg )
 	hr=OggBuffer->Play(0,0,DSBPLAY_LOOPING);
 	if (hr!=DS_OK)
 	{
-		LOG("SfxCore (Error):OggBuffer->Play -> "<< GetDxSoundErrorDesc(hr) <<"\r\n");
+		ErrMsg="SfxCore (Error):OggBuffer->Play : ";
+		ErrMsg+=GetDxSoundErrorDesc(hr);
+		LOG(ErrMsg);
+		return false;
 	}
 
 	//spawn the thread, it won't consume cpu unless music is playing
@@ -462,7 +441,7 @@ long TSoundEngine::OggThread()
 		//SetEvent(OggStopStream);
 		if (MusicPlaying)
 		{
-			EnterCriticalSection(&OggCrit);
+			ScopedLock Al(OggLock);
 			//if Result==0  we need to lock 2nd part of buffer
 			OggBuffer->Lock(HBufferSize*(Result ^ 1),HBufferSize*2,&Ptr1,&Size1,&Ptr2,&Size2,0);
 			CopyLeft=HBufferSize;
@@ -499,7 +478,7 @@ long TSoundEngine::OggThread()
 			//unlock buffer
 			OggBuffer->Unlock(Ptr1,Size1,Ptr2,Size2);
 
-			LeaveCriticalSection(&OggCrit);
+			//unlock OggLock
 		}
 		WaitForSingleObject(OggStopStream,INFINITE);
 
@@ -525,10 +504,11 @@ void TSoundEngine::PlayOggStream(const char *FileName)
 	}
 
 	//we're "forced" to use fopen, fread etc 
-	EnterCriticalSection(&OggCrit);
-	fopen_s(&OggFile,FileName2,"rb");
-	ov_open(OggFile,&OggStruct,NULL,0);
-	LeaveCriticalSection(&OggCrit);
+	{
+		ScopedLock Al(OggLock);
+		fopen_s(&OggFile,FileName2,"rb");
+		ov_open(OggFile,&OggStruct,NULL,0);
+	}
 
 	
 	MusicPlaying=true;
@@ -539,6 +519,7 @@ void TSoundEngine::PlayOggStream(const char *FileName)
 	{
 		LOG("SoundEngine (Error): OggBuffer->Play " << GetDxSoundErrorDesc(hr) << "\r\n");
 	}
+	
 };
 
 void TSoundEngine::StopOggStream(void)
@@ -548,9 +529,10 @@ void TSoundEngine::StopOggStream(void)
 		ResetEvent(OggStopStream);
 		OggBuffer->Stop();
 		MusicPlaying=false;
-		EnterCriticalSection(&OggCrit);
-		ov_clear(&OggStruct);// note : ov_clear call fclose 
-		LeaveCriticalSection(&OggCrit);
+		{
+			ScopedLock Al(OggLock);
+			ov_clear(&OggStruct);// note : ov_clear call fclose 
+		}
 	}
 };
 
@@ -584,7 +566,7 @@ const char* GetDxSoundErrorDesc(const HRESULT Hr)
             return "Already Allocated";
 		// The control (vol, pan, etc.) requested by the caller is not available
 		case DSERR_CONTROLUNAVAIL:          
-			return "Unavalaible Control";
+			return "Unavailable Control";
 		// An invalid parameter was passed to the returning function
 		case DSERR_INVALIDPARAM:
 			return "Invalid Parameter";

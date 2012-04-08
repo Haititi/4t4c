@@ -1,7 +1,8 @@
 #ifndef SPRITEDATABASE_H
 #define SPRITEDATABASE_H
 
-// Include File.
+#include "Headers.h"
+#include "Lock.h"
 #include "HashPool.h"
 #include "GfxEngine.h" 
 
@@ -85,7 +86,7 @@ private:
 
 	PSiInfo DummySprite; //to be able to remove a lot of check
 
-	CRITICAL_SECTION DataBaseLock[8]; //use 10 different lock to optimize access
+	CriticalSection DataBaseLock[8]; //use 10 different lock to optimize access
 
 	void LoadSurfaceP8As16(PSiInfo SpriteInfo,LPBYTE Data,LPBYTE Pal);
 	void LoadSurfaceP8As32(PSiInfo SpriteInfo,LPBYTE Data,LPBYTE Pal);
@@ -116,7 +117,7 @@ extern TSpriteDatabase SpriteDb;
 struct TFileAccess
 {
 	HANDLE File;
-	CRITICAL_SECTION Lock;
+	CriticalSection Lock;
 };
 
 const int MultiDataCount=4;

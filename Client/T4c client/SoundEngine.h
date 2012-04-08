@@ -1,12 +1,13 @@
 #ifndef SOUNDENGINE_H
 #define SOUNDENGINE_H
-#include <windows.h>
+
+#include "Headers.h"
 #include <dsound.h>
-#include <process.h>
-#include <string>
-#include <vector>
-#include <list>
+#include "Lock.h"
+extern "C"
+{
 #include "Vorbisfile.h"
+}
 #include "Hashpool.h"
 
 #define TS_SOUNDDRIVER 0x0001
@@ -120,8 +121,9 @@ public:
 	FILE* OggFile;
 	OggVorbis_File OggStruct;
 
-	CRITICAL_SECTION CritSect;
-	CRITICAL_SECTION OggCrit;
+	CriticalSection Lock;
+
+	CriticalSection OggLock;
 
 	long OggThread(void);
 
@@ -147,6 +149,6 @@ public:
 	TSoundObject* GetSoundObject(const char* SoundName);
 };
 
-extern TSoundEngine *SoundEngine;
+extern TSoundEngine SoundEngine;
 
 #endif

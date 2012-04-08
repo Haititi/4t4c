@@ -1,8 +1,3 @@
-// Include.
-#include "pch.h"
-#include <windows.h>
-#include <stdio.h>
-#pragma warning( disable: 4786 )
 #include "SpriteDatabase.h"
 #include "Debug.h"
 #include "GfxEngine.h" 
@@ -106,9 +101,6 @@ TSpriteDatabase::TSpriteDatabase()
 
 	delete OffsetHash;
 	IndexLoaded = true;
-
-	for (unsigned int i=0;i<8;i++)
-		InitializeCriticalSection( &DataBaseLock[i] );
 }
 
 TSpriteDatabase::~TSpriteDatabase()
@@ -122,9 +114,6 @@ TSpriteDatabase::~TSpriteDatabase()
 	}
 	delete SiInfoArray;
 	delete IndexHash;
-
-	for (unsigned int i=0;i<8;i++)
-		DeleteCriticalSection( &DataBaseLock[i] );
 }
 
 PSiInfo TSpriteDatabase::GetIndexEntry(const char* SpriteName)
@@ -149,12 +138,11 @@ void TSpriteDatabase::LoadPsi(PSiInfo SpriteInfo)
 	if (SpriteInfo)
 	{
 		const unsigned long LockIndex=RandHash(SpriteInfo->SpriteName) & 7;
-		EnterCriticalSection( &DataBaseLock[LockIndex] );
+		ScopedLock Al( DataBaseLock[LockIndex] );
 
 		if (SpriteInfo->UseCount>0) //nothing to load
 		{
 			SpriteInfo->UseCount++;
-			LeaveCriticalSection( &DataBaseLock[LockIndex] );
 			return;
 		}
 
@@ -182,14 +170,13 @@ void TSpriteDatabase::LoadPsi(PSiInfo SpriteInfo)
 				LoadSprite_Lzma(SpriteInfo,PalettePtr); 
 				break;
 		}
-		LeaveCriticalSection( &DataBaseLock[LockIndex] );
 	}
 }
 
 void TSpriteDatabase::UnloadPsi(PSiInfo SpriteInfo)
 {
 	const unsigned long LockIndex=RandHash(SpriteInfo->SpriteName) & 7;
-	EnterCriticalSection( &DataBaseLock[LockIndex] );
+	ScopedLock Al( DataBaseLock[LockIndex] );
 
 	if (SpriteInfo->UseCount>0)
 	{
@@ -200,8 +187,6 @@ void TSpriteDatabase::UnloadPsi(PSiInfo SpriteInfo)
 			SpriteInfo->Surface=0;
 		}
 	}
-
-	LeaveCriticalSection( &DataBaseLock[LockIndex] );
 };
 
 /* Obsolete
@@ -522,7 +507,6 @@ TMultiDataAccess::TMultiDataAccess(void)
 	HelperIndex=0;
 	for(int i=0;i<MultiDataCount;i++)
 	{
-		InitializeCriticalSection(&FileAccess[i].Lock);
 		FileAccess[i].File=CreateFile(".\\GameFiles\\Data.data",GENERIC_READ,FILE_SHARE_READ,0,OPEN_EXISTING,FILE_FLAG_RANDOM_ACCESS,0);
 	}
 };
@@ -531,7 +515,6 @@ TMultiDataAccess::~TMultiDataAccess(void)
 {
 	for(int i=0;i<MultiDataCount;i++)
 	{
-		DeleteCriticalSection(&FileAccess[i].Lock);
 		CloseHandle(FileAccess[i].File);
 	}
 };
@@ -539,7 +522,7 @@ TMultiDataAccess::~TMultiDataAccess(void)
 void TMultiDataAccess::ReadData(void* Buffer,const unsigned long Position,const unsigned long Count)
 {
 	unsigned long NewIndex=HelperIndex;
-	while (TryEnterCriticalSection(&FileAccess[NewIndex].Lock)==false)
+	while (FileAccess[NewIndex].Lock.TryLock()==false)
 	{
 		NewIndex=(NewIndex+1)%MultiDataCount;
 	}
@@ -550,5 +533,5 @@ void TMultiDataAccess::ReadData(void* Buffer,const unsigned long Position,const 
 	unsigned long ByteRead;
 	ReadFile(FileAccess[NewIndex].File,Buffer,Count,&ByteRead,0);
 
-	LeaveCriticalSection(&FileAccess[NewIndex].Lock);
+	FileAccess[NewIndex].Lock.Unlock();
 };

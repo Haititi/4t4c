@@ -1,6 +1,5 @@
 #include "D3dFont.h"
 #include "FastStream.h"
-#include <math.h>
 #include "FormatText.h"
 //global
 TFontManager FontManager;

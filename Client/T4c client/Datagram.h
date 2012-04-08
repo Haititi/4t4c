@@ -1,9 +1,9 @@
 #ifndef DATAGRAM_H
 #define DATAGRAM_H
 
+#include "Headers.h"
 #include "../ProtoHdr.h"
-#include <winsock.h>
-#include <vector>
+
 
 const int IP_HeaderSize=20;
 const int UDP_HeaderSize=8;

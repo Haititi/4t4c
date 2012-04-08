@@ -1,8 +1,7 @@
 #ifndef D3DFONT_H
 #define D3DFONT_H
 
-#include <windows.h>
-#include <vector>
+#include "Headers.h"
 #include "GfxEngine.h"
 
 const unsigned long FormatColorTable[10]=

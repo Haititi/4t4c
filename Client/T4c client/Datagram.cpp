@@ -1,7 +1,5 @@
 #include "Datagram.h"
-#include <windows.h>
 #include "Packet.h"
-#include <algorithm>
 
 const unsigned short CrcTable[256]=
 {

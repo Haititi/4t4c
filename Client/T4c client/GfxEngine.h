@@ -1,8 +1,7 @@
 #ifndef GFXENGINE_H
 #define GFXENGINE_H
 
-#pragma warning(disable:4786)
-#include <windows.h>
+#include "Headers.h"
 #include "d3d9.h"
 #include "SystemInfo.h"
 //#include "Global.h"

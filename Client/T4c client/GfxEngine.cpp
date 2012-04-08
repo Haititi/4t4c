@@ -1,9 +1,7 @@
+#include "GfxEngine.h"
 #include "d3d9.h"
-#include <memory.h>
-#include <stdio.h>
 #include "debug.h"
 #include "fastStream.h"
-#include "GfxEngine.h"
 #include "zlib.h"
 #include "App.h"
 
@@ -136,7 +134,7 @@ void TGfxEngine::Initialize(const bool Windowed,const unsigned long Resx,const u
 						    D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
 							&D3dPp, &Direct3dDev);
 #else
-	hr=Direct3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, SystemInfo->GethWnd(),
+	hr=Direct3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, TSystemInfo::Inst().GethWnd(),
 						    D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
 							&D3dPp, &Direct3dDev);
 #endif

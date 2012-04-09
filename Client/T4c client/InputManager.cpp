@@ -13,6 +13,9 @@
 #include "macrohandler.h"
 #include "GameTime.h"
 
+//we include it here , not in headers.haaaaaaaa : it has some problematic macro
+#include <WindowsX.h>
+
 TInputManager Input;
 TMouseCursor MouseCursor;
 
@@ -468,7 +471,7 @@ void TMouseCursor::DrawCursor(const float DeltaTime,const int x,const int y)
 		// Display either the custom vsf cursor or the forced cursor.
 		if (CustomCursor) 
 		{
-			CustomCursor->Render(DeltaTime,(float)(x+XCor), (float)(y+YCor), 0.0f,TItemState_Inventory,0,false);
+			CustomCursor->Render(DeltaTime,(float)(x+XCor), (float)(y+YCor), 0.0f,EItemState::Inventory,0,false);
 		} 
 		else 
 		{

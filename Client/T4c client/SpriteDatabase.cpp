@@ -33,7 +33,7 @@ TSpriteDatabase::TSpriteDatabase()
 	if (!FstIdx.LoadFromFile(".\\GameFiles\\Index.si"))
 	{
 		LOG("SpriteDatabase : Unable to Load Index.si, Cannot continue\r\n");
-		App.Close("SpriteDatabase : Unable to Load Index.si, Cannot continue",Err_FileMissing);
+		App.Close("SpriteDatabase : Unable to Load Index.si, Cannot continue",ET4cErrCode::FileMissing);
 		return;
 	};
 	//todo check Checksum
@@ -74,7 +74,7 @@ TSpriteDatabase::TSpriteDatabase()
 	if (!FstOff.LoadFromFile(".\\GameFiles\\Offset.dat"))
 	{
 		LOG("SpriteDatabase : Unable to Load Offset.dat, Cannot continue\r\n");
-		App.Close("SpriteDatabase : Unable to Load Offset.dat, Cannot continue",Err_FileMissing);
+		App.Close("SpriteDatabase : Unable to Load Offset.dat, Cannot continue",ET4cErrCode::FileMissing);
 		return;
 	};
 

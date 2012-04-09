@@ -403,13 +403,13 @@ bool TSkinRendererMonster::Render(const float DeltaTime,const float BaseXPos,con
 
 		switch (Action)
 		{
-			case TUnitAction_Stand:
-			case TUnitAction_SpellCast:
+			case EUnitAction::Stand:
+			case EUnitAction::SpellCast:
 			{
 				LastFrame=&SkinInfo->Walk.Direction[Dir].FrameList[0];
 				break;
 			}
-			case TUnitAction_Walk:
+			case EUnitAction::Walk:
 			{
 				const unsigned long &MaxFrame=SkinInfo->Walk.Direction[Dir].GraphCount;
 				Reverse=SkinInfo->Walk.Direction[Dir].Reversed;
@@ -417,8 +417,8 @@ bool TSkinRendererMonster::Render(const float DeltaTime,const float BaseXPos,con
 				Result=((ActualFrame%MaxFrame)==MaxFrame-1);
 				break;
 			}
-			case TUnitAction_AtkBow:
-			case TUnitAction_AtkStand:
+			case EUnitAction::AtkBow:
+			case EUnitAction::AtkStand:
 			{
 				const unsigned long &MaxFrame=SkinInfo->Attack.Direction[Dir].GraphCount;
 				Reverse=SkinInfo->Attack.Direction[Dir].Reversed;
@@ -426,7 +426,7 @@ bool TSkinRendererMonster::Render(const float DeltaTime,const float BaseXPos,con
 				Result=((ActualFrame%MaxFrame)==MaxFrame-1);
 				break;
 			}
-			case TUnitAction_Die:
+			case EUnitAction::Die:
 			{
 				const unsigned long &MaxFrame=SkinInfo->Death.GraphCount;
 				if (ActualFrame>MaxFrame-1)
@@ -549,13 +549,13 @@ bool TSkinRendererPuppetPart::Render(const float DeltaTime,const float BaseXPos,
 
 		switch (Action)
 		{
-			case TUnitAction_Stand:
-			case TUnitAction_SpellCast:
+			case EUnitAction::Stand:
+			case EUnitAction::SpellCast:
 			{
 				Frame=&SkinInfo->Walk.Direction[Dir].FrameList[0];
 				break;
 			}
-			case TUnitAction_Walk:
+			case EUnitAction::Walk:
 			{
 				const unsigned long &MaxFrame=SkinInfo->Walk.Direction[Dir].GraphCount;
 				Reverse=SkinInfo->Walk.Direction[Dir].Reversed;
@@ -563,7 +563,7 @@ bool TSkinRendererPuppetPart::Render(const float DeltaTime,const float BaseXPos,
 				Result=((ActualFrame%MaxFrame)==MaxFrame-1);
 				break;
 			}
-			case TUnitAction_AtkBow:
+			case EUnitAction::AtkBow:
 			{
 				const unsigned long &MaxFrame=SkinInfo->Range.Direction[Dir].GraphCount;
 				Reverse=SkinInfo->Range.Direction[Dir].Reversed;
@@ -571,7 +571,7 @@ bool TSkinRendererPuppetPart::Render(const float DeltaTime,const float BaseXPos,
 				Result=((ActualFrame%MaxFrame)==MaxFrame-1);
 				break;
 			}
-			case TUnitAction_AtkStand:
+			case EUnitAction::AtkStand:
 			{
 				const unsigned long &MaxFrame=SkinInfo->Attack.Direction[Dir].GraphCount;
 				Reverse=SkinInfo->Attack.Direction[Dir].Reversed;
@@ -579,7 +579,7 @@ bool TSkinRendererPuppetPart::Render(const float DeltaTime,const float BaseXPos,
 				Result=((ActualFrame%MaxFrame)==MaxFrame-1);
 				break;
 			}
-			case TUnitAction_Die:
+			case EUnitAction::Die:
 			{
 				const unsigned long &MaxFrame=SkinInfo->Death.GraphCount;
 				if (ActualFrame>MaxFrame-1)

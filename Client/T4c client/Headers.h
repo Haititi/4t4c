@@ -5,8 +5,6 @@
 #pragma warning( disable : 4291 )
 
 #include <windows.h>
-#include <WindowsX.h>
-#undef IsMinimized
 #include <stdlib.h>
 #include <winsock.h>
 

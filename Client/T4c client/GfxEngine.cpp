@@ -88,7 +88,7 @@ void TGfxEngine::Initialize(const bool Windowed,const unsigned long Resx,const u
 	if (!Direct3d)
 	{
 		LOG("Gfx : Unable to create Direct3d\r\n");
-		App.Close("Gfx : Unable to create Direct3d\r\n",Err_Directx);
+		App.Close("Gfx : Unable to create Direct3d\r\n",ET4cErrCode::Directx);
 	}
 
 	ZeroMemory(&D3dPp, sizeof(D3DPRESENT_PARAMETERS));
@@ -141,7 +141,7 @@ void TGfxEngine::Initialize(const bool Windowed,const unsigned long Resx,const u
 	if (hr!=0)
 	{
 		LOG("Unable to create Direct3d Device\r\n");
-		App.Close("Unable to create Direct3d Device",Err_Directx);
+		App.Close("Unable to create Direct3d Device",ET4cErrCode::Directx);
 	}
 
 	//setup Standard rendering states

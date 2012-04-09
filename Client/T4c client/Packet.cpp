@@ -228,10 +228,10 @@ void TPacket::CopyShortString(char * Str,int DestSize)
 	}
 };
 
-void TPacket::Pack_RQ_PlayerMove(TCharDirection Direction)//1-8
+void TPacket::Pack_RQ_PlayerMove(ECharDirection::Enum Direction)//1-8
 {
 	if ((Direction==0) || (Direction>8))
-		Direction=CharDir_Up;
+		Direction=ECharDirection::Up;
 	SetPakId(Direction);
 };
 

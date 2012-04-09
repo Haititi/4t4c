@@ -5,16 +5,20 @@
 //custom serialization class to build network pack
 
 //TODO move that somewhere else......
-enum TCharDirection
+
+struct ECharDirection
 {
-	CharDir_Up=1,
-	CharDir_UpRight,
-	CharDir_Right,
-	CharDir_DownRight,
-	CharDir_Down,
-	CharDir_DownLeft,
-	CharDir_Left,
-	CharDir_UpLeft
+	enum Enum
+	{
+		Up=1,
+		UpRight,
+		Right,
+		DownRight,
+		Down,
+		DownLeft,
+		Left,
+		UpLeft
+	};
 };
 
 class TPacket
@@ -70,7 +74,7 @@ public:
 	//pak building functions
 	void Pack_RQ_KeepAlive(void);//10
 
-	void Pack_RQ_PlayerMove(TCharDirection Direction); //1->8
+	void Pack_RQ_PlayerMove(ECharDirection::Enum Direction); //1->8
 	void Pack_RQ_GetPlayerPos(void);//9
 	void Pack_RQ_RegisterAccount(const char* Login,const char* Password,const short Version);//14
 	void Pack_RQ_DeleteCharacter(const char* CharName);//15

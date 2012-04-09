@@ -4,13 +4,16 @@
 #include "GfxEngine.h"
 #include "HashPool.h"
 
-enum TLightLocation
+struct ELightLocation
 {
-	LightLoc_OpenAir,	//standard lighttable
-	LightLoc_Forest,	//darker standard lighttable
-	LightLoc_Cave,		//very dark and greenish gloom at night
-	LightLoc_CaveMagma, //changing shade of red
-	LightLoc_Count
+	enum Enum
+	{
+		OpenAir,	//standard lighttable
+		Forest,	//darker standard lighttable
+		Cave,		//very dark and greenish gloom at night
+		CaveMagma, //changing shade of red
+		Count
+	};
 };
 
 typedef unsigned long TLightTable[1440];
@@ -33,8 +36,8 @@ private:
 
 	THashPool LightPool;
 
-	TLightLocation Location;
-	TLightTable LightTables[LightLoc_Count];
+	ELightLocation::Enum Location;
+	TLightTable LightTables[ELightLocation::Count];
 
 	unsigned long* ActualLightTable;
 	unsigned long GeneralLightColor; //depends of the location/time
@@ -46,7 +49,7 @@ public:
 	~TLightningManager(void);
 	void Initialize(void); //need the gfxengine running
 
-	void SetLocation(TLightLocation NewLoc);
+	void SetLocation(ELightLocation::Enum NewLoc);
 	void ClearLights(void);
 	unsigned long AddLight(unsigned long Type,int PosX,int PosY,float Intensity,unsigned long Color);//return a unique identifier to that light
 	

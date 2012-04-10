@@ -243,7 +243,7 @@ long TMapLoader::LoadingThread(void)
 	{
 		//LOGIT("Map Loading Thread : Start.\r\n");
 		LOG("MapLoader : Map Loading Request");
-		ChatterUI::GetInstance()->AddBackscrollItem("","Loading Map..",RGB32(0,100,255),true);
+		ChatterUI::GetInstance()->AddText("","Loading Map..",RGB32(0,100,255),true);
 
 		//1st we load compressed map data
 
@@ -271,7 +271,7 @@ long TMapLoader::LoadingThread(void)
 
 	
 	
-	ChatterUI::GetInstance()->AddBackscrollItem("","Loading Zone..",RGB32(0,100,255),true);
+	ChatterUI::GetInstance()->AddText("","Loading Zone..",RGB32(0,100,255),true);
 	//3rd we check id which need to be loaded
 	for (unsigned long i=0;i<IndexArray[ActualCacheIndex].IdCount;i++)
 	{
@@ -293,7 +293,7 @@ long TMapLoader::LoadingThread(void)
 		}
 
 	}
-	ChatterUI::GetInstance()->AddBackscrollItem("","Loading Zone End..",RGB32(0,100,255),true);
+	ChatterUI::GetInstance()->AddText("","Loading Zone End..",RGB32(0,100,255),true);
 
 	//LOGIT("Map Loading Thread : Standard End.\r\n");
 	LOG("MapLoader : Map Loading Finished.");

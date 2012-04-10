@@ -5,14 +5,17 @@
 #include "HashPool.h"
 #include "SkinTypes.h"
 
-enum TSkinType
+struct ESkinType
 {
-	SkinType_Void=0,
-	SkinType_Item,
-	SkinType_Monster,
-	SkinType_PuppetPart,
-	SkinType_Puppet,
-	SkinType_FORCE_DWORD=0x7FFFFFFF
+	enum Enum
+	{
+		Void=0,
+		Item,
+		Monster,
+		PuppetPart,
+		Puppet,
+		FORCE_DWORD=0x7FFFFFFF
+	};
 };
 
 class TSkinRenderer
@@ -29,7 +32,7 @@ protected:
 public:
 	TSkinRenderer(THashPool* HashPool,const unsigned long SkinId)
 	{	
-		SkinType=SkinType_Void; 
+		SkinType=ESkinType::Void; 
 		ThisSkinId=SkinId;
 		LastAction=0;
 		ActualFrame=0;

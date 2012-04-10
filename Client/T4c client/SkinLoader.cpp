@@ -239,7 +239,7 @@ TSkinRenderer* TSkinLoader::GetSkin(const unsigned long SkinId)
 
 TSkinRendererItem::TSkinRendererItem(THashPool* HashPool,const unsigned long SkinId):TSkinRenderer(HashPool,SkinId)
 {
-	SkinType=SkinType_Item;
+	SkinType=ESkinType::Item;
 
 	SkinInfo=(TItemSkinInfo*)HashPool->GetEntry(RandHash(SkinId));
 
@@ -307,7 +307,7 @@ bool TSkinRendererItem::Render(const float DeltaTime,const float BaseXPos,const 
 //monster Skin Class
 TSkinRendererMonster::TSkinRendererMonster(THashPool* HashPool,const unsigned long SkinId):TSkinRenderer(HashPool,SkinId)
 {
-	SkinType=SkinType_Monster;
+	SkinType=ESkinType::Monster;
 	LastFrame=0;
 
 	SkinInfo=(TMonsterSkinInfo*)HashPool->GetEntry(RandHash(SkinId));
@@ -456,7 +456,7 @@ bool TSkinRendererMonster::Render(const float DeltaTime,const float BaseXPos,con
 
 TSkinRendererPuppetPart::TSkinRendererPuppetPart(THashPool* HashPool,const unsigned long SkinId):TSkinRenderer(HashPool,SkinId)
 {
-	SkinType=SkinType_PuppetPart;
+	SkinType=ESkinType::PuppetPart;
 
 	SkinInfo=(TPuppetSkinInfo*)HashPool->GetEntry(RandHash(SkinId));
 
@@ -606,7 +606,7 @@ bool TSkinRendererPuppetPart::Render(const float DeltaTime,const float BaseXPos,
 
 TSkinRendererPuppet::TSkinRendererPuppet(THashPool* HashPool,const unsigned long SkinId):TSkinRenderer(HashPool,SkinId)
 {
-	SkinType=SkinType_Puppet;
+	SkinType=ESkinType::Puppet;
 	SkinPool=HashPool;
 	Female=0;
 	if (SkinId == 10011)

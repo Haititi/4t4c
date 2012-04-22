@@ -15,7 +15,7 @@ private:
 public:
     TSysMsg(void);
     ~TSysMsg(void);
-    void SetText( const char *Txt, const unsigned long BaseColor,const float Time,const bool MultiLine);
+    void SetText( std::wstring &Txt, const unsigned long BaseColor,const float Time,const bool MultiLine);
     void Draw(const int x,const int y ,const unsigned long Alpha);
     unsigned int GetHeight(void);
     float GetTimestamp(void){ return TimeStamp; };
@@ -31,7 +31,7 @@ private:
 public:
 	TSysMsgList(void);
 	~TSysMsgList(void);
-	void AddMessage(const char *Text, unsigned long Color, float Time, bool AllowNewLine);
+	void AddMessage(std::wstring &Text, unsigned long Color, float Time, bool AllowNewLine);
 	void Render(float DeltaTime);
 };
 

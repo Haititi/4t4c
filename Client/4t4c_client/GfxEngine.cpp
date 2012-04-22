@@ -88,7 +88,7 @@ void TGfxEngine::Initialize(const bool Windowed,const unsigned long Resx,const u
 	if (!Direct3d)
 	{
 		LOG("Gfx : Unable to create Direct3d\r\n");
-		App.Close("Gfx : Unable to create Direct3d\r\n",ET4cErrCode::Directx);
+		App.Close(L"Gfx : Unable to create Direct3d\r\n",ET4cErrCode::Directx);
 	}
 
 	ZeroMemory(&D3dPp, sizeof(D3DPRESENT_PARAMETERS));
@@ -141,7 +141,7 @@ void TGfxEngine::Initialize(const bool Windowed,const unsigned long Resx,const u
 	if (hr!=0)
 	{
 		LOG("Unable to create Direct3d Device\r\n");
-		App.Close("Unable to create Direct3d Device",ET4cErrCode::Directx);
+		App.Close(L"Unable to create Direct3d Device",ET4cErrCode::Directx);
 	}
 
 	//setup Standard rendering states
@@ -236,7 +236,7 @@ LPDIRECT3DTEXTURE9 TGfxEngine::CreateTexture(unsigned long Sizex,unsigned long S
 
 	if (Direct3dDev->CreateTexture(Sizex,Sizey,1,D3DUSAGE_DYNAMIC,Format,D3DPOOL_DEFAULT,&Texture,NULL)==D3DERR_INVALIDCALL)
 	{
-		MessageBox(NULL,"Gfx : Invalid CreateTexture Call","Dx Error",0);
+		MessageBoxA(NULL,"Gfx : Invalid CreateTexture Call","Dx Error",0);
 		LOG("Inv Text Call"<< Sizex << "-" << Sizey << "-" << Format);
 	}
 	return Texture;
@@ -1029,7 +1029,7 @@ void TGfxEngine::TakeScreenShoot(void)
 
 	if (Lock.pBits==NULL)
 	{
-		MessageBox(NULL,"Gfx : Invalid Surface pBits==NULL","Dx Error",0);
+		MessageBoxA(NULL,"Gfx : Invalid Surface pBits==NULL","Dx Error",0);
 		return;
 	}
 
@@ -1057,8 +1057,8 @@ void TGfxEngine::TakeScreenShoot(void)
 
 	SYSTEMTIME CurTime;
 	GetLocalTime(&CurTime);
-	char FileName[128];
-	sprintf_s(FileName,128, ".\\screens\\Scr%04u_%02u_%02u@%02uh%02um%02us.tga", CurTime.wYear, CurTime.wMonth, CurTime.wDay, 
+	std::wstring FileName(128,L'\0');
+	swprintf(&FileName[0],128, L".\\screens\\Scr%04u_%02u_%02u@%02uh%02um%02us.tga", CurTime.wYear, CurTime.wMonth, CurTime.wDay, 
 		CurTime.wHour,CurTime.wMinute, CurTime.wSecond);
 	Fst.SaveToFile(FileName);
 };
@@ -1119,7 +1119,7 @@ void TGfxEngine::TakeScreenShoot(void)
     return;
 }*/
 
-LPDIRECT3DTEXTURE9 CreateTextureFromZmb(const char* Filename)
+LPDIRECT3DTEXTURE9 CreateTextureFromZmb(std::wstring FileName)
 {
 	LPDIRECT3DTEXTURE9 NewTexture=NULL;
 	unsigned long Width, Height,CompSize;
@@ -1129,7 +1129,7 @@ LPDIRECT3DTEXTURE9 CreateTextureFromZmb(const char* Filename)
 	unsigned long Dummy;
 	int OutSize;
 
-	Fic=CreateFile(Filename,GENERIC_READ,0,NULL,OPEN_EXISTING,NULL,NULL);
+	Fic=CreateFileW(FileName.c_str(),GENERIC_READ,0,NULL,OPEN_EXISTING,NULL,NULL);
 
 	ReadFile(Fic,&Width,4,&Dummy,0);
 	ReadFile(Fic,&Height,4,&Dummy,0);

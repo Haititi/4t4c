@@ -18,10 +18,10 @@ TLightningManager::TLightningManager(void):LightPool(13)
 	SetLocation(ELightLocation::OpenAir);
 	//load the color tables
 	TFastStream Fst;
-	if (!Fst.LoadFromFile(".//gamefiles//lightloc_openair.dat"))
+	if (!Fst.LoadFromFile(L".//gamefiles//lightloc_openair.dat"))
 	{
 		LOG("LightningManager : Unable to Load lightloc_openair.dat, Cannot continue\r\n");
-		MessageBox(0,"Cannot open lightloc_openair.dat","fatal error",MB_OK);
+		MessageBoxA(0,"Cannot open lightloc_openair.dat","fatal error",MB_OK);
 		
 	};
 	Fst.Read(LightTables[ELightLocation::OpenAir],1440*sizeof(unsigned long));

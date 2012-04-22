@@ -132,7 +132,7 @@ public:
 public:
 	TSoundEngine(void);
 	~TSoundEngine(void);
-	bool Create( HWND hWnd, std::string &errMsg );
+	bool Create( HWND hWnd, std::wstring &errMsg );
 	void SetMusicVolume(float NewVolume);
 	void SetSoundVolume(float NewVolume);
 	void PlayOggStream(const char *FileName);

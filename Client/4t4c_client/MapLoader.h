@@ -92,7 +92,7 @@ class TMapLoader
 
 		void LoadId(int n); //Load graph for a map id with help of database
 		long LoadingThread(void);
-		void ReadIndexFile(const char* FileName);
+		void ReadIndexFile(std::wstring FileName);
 		unsigned long FindClosestCacheIndex(const int PosX,const int PosY);
 		void LoadMapIdInfo(void); //load Maps Name and corresponding info
 		void LoadMap(void);//load a specific map , cf:LoadMapInfo

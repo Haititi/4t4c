@@ -43,7 +43,7 @@ TMapLoader::TMapLoader(void)
 
 	//reading the mapnames
 	TFastStream Fst;
-	if (Fst.LoadFromFile(".\\GameFiles\\Maps\\MapName.dat"))
+	if (Fst.LoadFromFile(L".\\GameFiles\\Maps\\MapName.dat"))
 	{
 		MapCount=Fst.ReadLong();
 		MapName=new TMapName[MapCount];
@@ -78,7 +78,7 @@ TMapLoader::~TMapLoader(void)
 };
 
 
-void TMapLoader::ReadIndexFile(const char* FileName)
+void TMapLoader::ReadIndexFile(std::wstring FileName)
 {
 	struct TDatIndex
 	{
@@ -160,7 +160,7 @@ void TMapLoader::LoadMapIdInfo(void)
 	TFastStream Fst;
 	int i;
 
-	if (!Fst.LoadFromFile(".\\GameFiles\\MapIdInfo.Dat"))
+	if (!Fst.LoadFromFile(L".\\GameFiles\\MapIdInfo.Dat"))
 	{
 		LOG("MapLoader : critical error when trying to read MapIdInfo.dat\r\n");
 		return;
@@ -227,7 +227,7 @@ void TMapLoader::LoadMap(void)
 	unsigned long dwLoadThreadId;
 	LoadingFinished=false;
     StopLoad=false;
-	Global.DisplayMap=1;
+Global.DisplayMap=1;
 	LoadingThreadHdl=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)LoadingThreadFunc,this,0,&dwLoadThreadId);
 };
 
@@ -236,20 +236,19 @@ long TMapLoader::LoadingThread(void)
 {
 	HANDLE MapFile=0;
 	unsigned long FileSize=0;
-	char Temp[512];
-	
 
 	if(NeedMapLoad)
 	{
 		//LOGIT("Map Loading Thread : Start.\r\n");
 		LOG("MapLoader : Map Loading Request");
-		ChatterUI::GetInstance()->AddText("","Loading Map..",RGB32(0,100,255),true);
+		ChatterUI::GetInstance()->AddText(L"",L"Loading Map..",RGB32(0,100,255),true);
 
 		//1st we load compressed map data
 
-		sprintf_s(Temp,512,".\\GameFiles\\Maps\\%s.zlb",MapName[PosW].MapName);
+		std::wstring Temp(512,L'\0');
+		swprintf(&Temp[0],512,L".\\GameFiles\\Maps\\%s.zlb",MapName[PosW].MapName);
 
-		MapFile=CreateFile(Temp,GENERIC_READ,FILE_SHARE_READ,0,OPEN_EXISTING,0,0);
+		MapFile=CreateFileW(Temp.c_str(),GENERIC_READ,FILE_SHARE_READ,0,OPEN_EXISTING,0,0);
 		if (MapFile==INVALID_HANDLE_VALUE)
 		{
 			LOG("MapLoader : Unable to load map "<<Temp<<"\r\n");
@@ -265,13 +264,13 @@ long TMapLoader::LoadingThread(void)
 		delete []TempBuf;
 		
 		//2nd we load the cache index
-		sprintf_s(Temp,512,".\\GameFiles\\Maps\\%s.mdat",MapName[PosW].MapName);
+		swprintf(&Temp[0],512,L".\\GameFiles\\Maps\\%s.mdat",MapName[PosW].MapName);
 		ReadIndexFile(Temp);
 	}
 
 	
 	
-	ChatterUI::GetInstance()->AddText("","Loading Zone..",RGB32(0,100,255),true);
+	ChatterUI::GetInstance()->AddText(L"",L"Loading Zone..",RGB32(0,100,255),true);
 	//3rd we check id which need to be loaded
 	for (unsigned long i=0;i<IndexArray[ActualCacheIndex].IdCount;i++)
 	{
@@ -293,7 +292,7 @@ long TMapLoader::LoadingThread(void)
 		}
 
 	}
-	ChatterUI::GetInstance()->AddText("","Loading Zone End..",RGB32(0,100,255),true);
+	ChatterUI::GetInstance()->AddText(L"",L"Loading Zone End..",RGB32(0,100,255),true);
 
 	//LOGIT("Map Loading Thread : Standard End.\r\n");
 	LOG("MapLoader : Map Loading Finished.");

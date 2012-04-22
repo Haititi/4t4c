@@ -21,8 +21,8 @@ class TFastStream
 		void IncreasePos(unsigned int n);
 		void Seek(unsigned int n);
 		bool IsEnd(void){return (unsigned int)Position>=((unsigned int)Memory+Size);};
-		bool LoadFromFile(const char *n);
-		void SaveToFile(const char *n);
+		bool LoadFromFile(std::wstring FileName);
+		void SaveToFile(std::wstring FileName);
 
 		void Write(void *Buffer,const long n);
 	

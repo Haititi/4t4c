@@ -42,7 +42,7 @@ private:
 	void WriteUShort(const unsigned short Value);
 	void WriteULong(const unsigned long Value);
 
-	void WriteShortString(const char*const Str);
+	void WriteShortString(std::wstring& Str);
 
 	unsigned int GetIntPosition(void){return (unsigned int)Position-(unsigned int)Buffer;};
 public:
@@ -54,9 +54,8 @@ public:
 	//Stream func
 	void ReadData(void * const DataPtr,const unsigned int Size);
 	//that one allocate memory and return the string
-	char* ReadShortString();
-	//those 2 copy the string into the provided buffer
-	void CopyShortString(char* Str,int DestSize);
+	std::wstring ReadShortString();
+
 	signed char    ReadChar(void);
 	signed short   ReadShort(void);
 	signed long    ReadLong(void);
@@ -76,8 +75,8 @@ public:
 
 	void Pack_RQ_PlayerMove(ECharDirection::Enum Direction); //1->8
 	void Pack_RQ_GetPlayerPos(void);//9
-	void Pack_RQ_RegisterAccount(const char* Login,const char* Password,const short Version);//14
-	void Pack_RQ_DeleteCharacter(const char* CharName);//15
+	void Pack_RQ_RegisterAccount(std::wstring& Login,std::wstring& Password,const short Version);//14
+	void Pack_RQ_DeleteCharacter(std::wstring& CharName);//15
 	void Pack_RQ_SendPeriphericObjects(const char Direction,const short PosX,const short PosY);//16
 	void Pack_RQ_ViewBackpack(const short Unknown);//18
 	void Pack_RQ_ViewEquiped(void);//19
@@ -99,23 +98,23 @@ public:
 	void Pack_RQ_UseItemBySkin(const short SkinId);//72
 	void Pack_RQ_GetStatus(void);//43
 
-	void Pack_RQ_PutPlayerInGame(const char *CharName);
+	void Pack_RQ_PutPlayerInGame(std::wstring& CharName);
 	void Pack_RQ_FromPreInGameToInGame(void);//46
-	void Pack_RQ_EnterChannel(const char* Channel,const char *Password);//48
-	void Pack_RQ_SendChatterChannelMessage(const char* Channel,const char* Msg); //49
-	void Pack_RQ_LeaveChannel(const char* Channel);//74
+	void Pack_RQ_EnterChannel(std::wstring& Channel,std::wstring& Password);//48
+	void Pack_RQ_SendChatterChannelMessage(std::wstring& Channel,std::wstring& Msg); //49
+	void Pack_RQ_LeaveChannel(std::wstring& Channel);//74
 	void Pack_RQ_GetPublicChannelList(void);//75
-	void Pack_RQ_GetChannelUsersList(const char* Channel);//50
-	void Pack_RQ_ToggleChannelListening(const char* Channel,const char State);//86
+	void Pack_RQ_GetChannelUsersList(std::wstring& Channel);//50
+	void Pack_RQ_ToggleChannelListening(std::wstring& Channel,const char State);//86
 
 	void Pack_RQ_SendStatTrain(const char Str,const char End,const char Agi,const char Wil,const char Wis,const char Int,const char Luk);//58
 
-	void Pack_RQ_Page(const char* Name,const char* Msg);//29
+	void Pack_RQ_Page(std::wstring& Name,std::wstring& Msg);//29
 	void Pack_RQ_TogglePage(const char State);//89
-	void Pack_RQ_Shout(const char* Name,const char* Msg,const long Color);
+	void Pack_RQ_Shout(std::wstring& Name,std::wstring& Msg,const long Color);
 	void Pack_RQ_BroadcastTextChange(const long Id,const short Offset);
-	void Pack_RQ_DirectedTalk(const short PosX,const short PosY,const unsigned long Id,const char Direction,const unsigned long Color,const char* Msg);//30
-	void Pack_RQ_UndirectedTalk(const unsigned long Id,const char Direction,const unsigned long Color,const char* Msg);//27
+	void Pack_RQ_DirectedTalk(const short PosX,const short PosY,const unsigned long Id,const char Direction,const unsigned long Color,std::wstring& Msg);//30
+	void Pack_RQ_UndirectedTalk(const unsigned long Id,const char Direction,const unsigned long Color,std::wstring& Msg);//27
 	void Pack_RQ_BreakConversation(const short PosX,const short PosY,const unsigned long Id);//36
 
 	void Pack_RQ_GetNearItems(void);

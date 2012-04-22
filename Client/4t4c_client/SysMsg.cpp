@@ -1,23 +1,20 @@
 #include "SysMsg.h"
 #include "Gametime.h"
 
-extern TD3dFont* TalkFont;
-
 TSysMsgList SysMsgList;
 
 TSysMsg::TSysMsg(void) : TimeStamp( 0.0f ), Text( 0 )
 {
-	Text = TalkFont->CreateTextObject();
+	Text = Global.FntTalk->CreateTextObject();
 	Text->SetBackGround(false);
 	Text->SetFx(TextFX_Outline);
 }
 
 TSysMsg::~TSysMsg(void)
 {
-    delete Text;
 }
 
-void TSysMsg::SetText( const char *Txt, const unsigned long BaseColor,const float Time,const bool MultiLine)
+void TSysMsg::SetText( std::wstring &Txt, const unsigned long BaseColor,const float Time,const bool MultiLine)
 {
 	TimeStamp=Time;
 	Color=BaseColor;
@@ -55,11 +52,11 @@ TSysMsgList::~TSysMsgList(void)
 	
 };
 
-void TSysMsgList::AddMessage(const char *Text, unsigned long Color, float Time, bool AllowNewLine)
+void TSysMsgList::AddMessage(std::wstring &Txt, unsigned long Color, float Time, bool AllowNewLine)
 {
 	TSysMsg *Msg = new TSysMsg; 
 
-	Msg->SetText( Text, Color, Time, AllowNewLine);
+	Msg->SetText( Txt, Color, Time, AllowNewLine);
 
 	{
 		ScopedLock Al(Lock);

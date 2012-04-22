@@ -38,6 +38,24 @@ unsigned long RandHash(const char *Txt)
 	return Result;
 };
 
+unsigned long RandHash(std::wstring& Txt)
+{
+	unsigned long i,Result;
+	const char* p;
+
+	p=(char*)Txt[0];
+	
+	unsigned int Size=Txt.size()*sizeof(wchar_t);
+	Result=0xFFFFFFFF;
+
+	for (i=0;i<Size;i++)
+	{
+		Result=((Result << 5)+Result)^RndTable[(unsigned char)*p];
+		p++;
+	}
+	return Result;
+};
+
 unsigned long RandHash(const unsigned long Value)
 {
 	unsigned long Result=0xFFFFFFFF;

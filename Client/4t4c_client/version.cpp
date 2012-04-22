@@ -2,19 +2,26 @@
 
 #include "rev.inc"
 #define CLIENT_VERSION 100 
-#define BUILD_TIME __DATE__ " " __TIME__
+
+#define TOWIDE2(x) L ## x
+#define TOWIDE(x) TOWIDE2(x)
+
+#define __WDATE__ TOWIDE(__DATE__)
+#define __WTIME__ TOWIDE(__TIME__)
+
+#define BUILD_TIME __WDATE__ __WTIME__
 
 namespace Version
 {
 
-char VersionStr[ 256 ] = { 0 };
+std::wstring VersionStr(256,L'\0');
 
 
-const char *GetVersionText( void )
+std::wstring& GetVersionText( void )
 {
-    if( VersionStr[ 0 ] == 0 )
+    if( VersionStr[ 0 ] == L'\0' )
 	{
-        sprintf_s( VersionStr,256, "4T4C %.2f at Rev %u -> %s", ((float)CLIENT_VERSION)/100.0f, REVISION_NUMBER, BUILD_TIME );
+        swprintf_s( &VersionStr[0],256, L"4T4C %.2f at Rev %u -> %s", ((float)CLIENT_VERSION)/100.0f, REVISION_NUMBER, BUILD_TIME );
     }
 
     return VersionStr;
@@ -27,7 +34,7 @@ unsigned long GetVersion( void )
 }
 
 //return build time as string
-const char* GetBuildTime( void )
+const wchar_t* GetBuildTime( void )
 {
     return BUILD_TIME;
 }

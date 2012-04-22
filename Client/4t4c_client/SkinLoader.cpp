@@ -38,7 +38,7 @@ void TSkinLoader::Initialize(void)
 	TFastStream FstItem,FstMonst,FstPuppet;
 	unsigned long Version,Count;
 
-	FstItem.LoadFromFile(".\\GameFiles\\ItemSkinIdInfo.dat");
+	FstItem.LoadFromFile(L".\\GameFiles\\ItemSkinIdInfo.dat");
 
 	Version=FstItem.ReadLong();
 	Count=FstItem.ReadLong();
@@ -63,7 +63,7 @@ void TSkinLoader::Initialize(void)
 		ItemSkinHash->AddHashEntry(RandHash(ItemSkinArray[i].SkinId),&ItemSkinArray[i]);
 	}
 	
-	FstMonst.LoadFromFile(".\\GameFiles\\MonsterSkinIdInfo.dat");
+	FstMonst.LoadFromFile(L".\\GameFiles\\MonsterSkinIdInfo.dat");
 
 	Version=FstMonst.ReadLong();
 	Count=FstMonst.ReadLong();
@@ -143,7 +143,7 @@ void TSkinLoader::Initialize(void)
 		MonsterSkinHash->AddHashEntry(RandHash(MonsterSkinArray[i].Id),&MonsterSkinArray[i]);
 	}
 
-	FstPuppet.LoadFromFile(".\\GameFiles\\PuppetSkinIdInfo.dat");
+	FstPuppet.LoadFromFile(L".\\GameFiles\\PuppetSkinIdInfo.dat");
 
 	Version=FstPuppet.ReadLong();
 	Count=FstPuppet.ReadLong();

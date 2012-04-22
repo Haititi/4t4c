@@ -172,8 +172,66 @@ class TGfxEngine
 extern TGfxEngine GfxCore;
 
 //LPDIRECT3DTEXTURE9 CreateTextureFromPng(TString Filename);
-LPDIRECT3DTEXTURE9 CreateTextureFromZmb(const char* Filename);
+LPDIRECT3DTEXTURE9 CreateTextureFromZmb(std::wstring FileName);
 const char * GetDxErrorStr(unsigned long Error);
+
+class QuadTexture
+{
+	friend class ScopedTextureLock;
+private:
+	LPDIRECT3DTEXTURE9 Texture;
+	TSpritePlane Quad;
+	int PWidth, PHeight; //physical dimension
+	int Width, Height; //original dimension
+public:
+	QuadTexture(void)
+	{
+		Width=PWidth=0;
+		Height=PHeight=0;
+		Texture=0;
+	};
+
+	QuadTexture(const int WantedWidth,const int WantedHeight)
+	{
+		CreateTexture(WantedWidth,WantedHeight);
+	};
+
+	~QuadTexture(void)
+	{
+		if (Texture!=0)
+			Texture->Release();
+	};
+
+	void CreateTexture(const int WantedWidth,const int WantedHeight)
+	{
+		if (Texture!=0)
+			Texture->Release();
+		Width=WantedWidth;
+		Height=WantedHeight;
+		Texture=GfxCore.CreateTexture(Width,Height,D3DFMT_A8R8G8B8);
+	};
+
+	int GetWidth(void){return Width;};
+	int GetHeight(void){return Height;};
+	void Render(void){};
+};
+
+
+class ScopedTextureLock
+{
+	QuadTexture* Tex;
+public:
+	D3DLOCKED_RECT Info;
+	ScopedTextureLock(QuadTexture* pTex)
+	{
+		Tex=pTex;
+		Tex->Texture->LockRect(0,&Info,0,D3DLOCK_DISCARD);
+	};
+	~ScopedTextureLock(void)
+	{
+		Tex->Texture->UnlockRect(0);
+	};
+};
 
 #endif
 

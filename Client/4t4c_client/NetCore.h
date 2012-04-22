@@ -56,7 +56,7 @@ public:
 	~TNetworkCore(void);
 
 	//setup
-	bool Setup(const char* Ip,unsigned short Port);
+	bool Setup(std::string& Ip,unsigned short Port);
 	void SetWaitTimeForPakAgglomeration(unsigned int NewTimeMs){PakAggloWaitTime=NewTimeMs;};
 
 	//connection

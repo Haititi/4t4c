@@ -30,10 +30,10 @@ TSpriteDatabase::TSpriteDatabase()
 	OffsetHash=new THashPool(40009);
 
 	TFastStream FstIdx;
-	if (!FstIdx.LoadFromFile(".\\GameFiles\\Index.si"))
+	if (!FstIdx.LoadFromFile(L".\\GameFiles\\Index.si"))
 	{
 		LOG("SpriteDatabase : Unable to Load Index.si, Cannot continue\r\n");
-		App.Close("SpriteDatabase : Unable to Load Index.si, Cannot continue",ET4cErrCode::FileMissing);
+		App.Close(L"SpriteDatabase : Unable to Load Index.si, Cannot continue",ET4cErrCode::FileMissing);
 		return;
 	};
 	//todo check Checksum
@@ -71,10 +71,10 @@ TSpriteDatabase::TSpriteDatabase()
 
 	TFastStream FstOff;
 
-	if (!FstOff.LoadFromFile(".\\GameFiles\\Offset.dat"))
+	if (!FstOff.LoadFromFile(L".\\GameFiles\\Offset.dat"))
 	{
 		LOG("SpriteDatabase : Unable to Load Offset.dat, Cannot continue\r\n");
-		App.Close("SpriteDatabase : Unable to Load Offset.dat, Cannot continue",ET4cErrCode::FileMissing);
+		App.Close(L"SpriteDatabase : Unable to Load Offset.dat, Cannot continue",ET4cErrCode::FileMissing);
 		return;
 	};
 
@@ -156,7 +156,7 @@ void TSpriteDatabase::LoadPsi(PSiInfo SpriteInfo)
 			PalettePtr=TPalDatabase::GetInstance()->GetDefaultPal();
 
 		//show disk icon
-		Global.DisplayDisk=1;
+	Global.DisplayDisk=1;
 
 		switch (SpriteInfo->StoreType) 
 		{
@@ -507,7 +507,7 @@ TMultiDataAccess::TMultiDataAccess(void)
 	HelperIndex=0;
 	for(int i=0;i<MultiDataCount;i++)
 	{
-		FileAccess[i].File=CreateFile(".\\GameFiles\\Data.data",GENERIC_READ,FILE_SHARE_READ,0,OPEN_EXISTING,FILE_FLAG_RANDOM_ACCESS,0);
+		FileAccess[i].File=CreateFileA(".\\GameFiles\\Data.data",GENERIC_READ,FILE_SHARE_READ,0,OPEN_EXISTING,FILE_FLAG_RANDOM_ACCESS,0);
 	}
 };
 

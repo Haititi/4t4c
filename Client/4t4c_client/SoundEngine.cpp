@@ -8,7 +8,7 @@
 TSoundEngine SoundEngine;
 const unsigned long HBufferSize=16384; //engine streaming buffer
 
-const char* GetDxSoundErrorDesc(const HRESULT Hr);
+const wchar_t* GetDxSoundErrorDesc(const HRESULT Hr);
 
 TSoundInfo::TSoundInfo(char *SndName):SoundBuffer(0),DuplicateCount(0),DuplicateIndex(0),SpinLock(false)
 {
@@ -80,10 +80,10 @@ void TSoundInfo::Initialize(void)
 	if (SoundEngine.DirectSound->CreateSoundBuffer(&BufferDesc,&SoundBuffer,0)==DS_OK)
 	{
 		//lock and load wave data
-		char FilePath[512];
-		sprintf_s(FilePath,512,".\\GameFiles\\sounds\\%s.wav",SoundName);
+		std::wstring FilePath(512,L'\0');
+		swprintf(&FilePath[0],512,L".\\GameFiles\\sounds\\%s.wav",SoundName);
 		HANDLE FileHdl;
-		FileHdl=CreateFile(FilePath,GENERIC_READ,FILE_SHARE_READ,0,OPEN_EXISTING,0,0);
+		FileHdl=CreateFileW(FilePath.c_str(),GENERIC_READ,FILE_SHARE_READ,0,OPEN_EXISTING,0,0);
 
 		void* PtrVoid1,*PtrVoid2;
 		unsigned long PtrSize1,PtrSize2,NbRead;
@@ -241,7 +241,7 @@ TSoundEngine::TSoundEngine(void):SoundPool(199)
 
 	//referencing sounds
 	TFastStream FstIdx;
-	if (!FstIdx.LoadFromFile(".\\GameFiles\\sounds.txt"))
+	if (!FstIdx.LoadFromFile(L".\\GameFiles\\sounds.txt"))
 	{
 		return;
 	}
@@ -299,7 +299,7 @@ long WINAPI OggThreadRoutine(TSoundEngine* Arg)
 	return (Arg->OggThread());
 };
 
-bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg ) 
+bool TSoundEngine::Create( HWND hWnd, std::wstring &ErrMsg ) 
 {
 	DSBUFFERDESC BufferDesc;
 	WAVEFORMATEX WaveFmt;
@@ -309,7 +309,7 @@ bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg )
 
 	if (hr!=DS_OK)
 	{
-		ErrMsg = "DirectSoundCreate was not sucessful: ";
+		ErrMsg = L"DirectSoundCreate was not sucessful: ";
 		ErrMsg+=GetDxSoundErrorDesc(hr);
 		LOG(ErrMsg);
 		return false;
@@ -336,7 +336,7 @@ bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg )
 	hr = DirectSound->CreateSoundBuffer(&BufferDesc, &Primary, NULL);
 	if( hr != DS_OK )
 	{
-		ErrMsg="SoundEngine : Could not create primary sound buffer : ";
+		ErrMsg=L"SoundEngine : Could not create primary sound buffer : ";
 		ErrMsg+=GetDxSoundErrorDesc(hr);
 		LOG(ErrMsg);
 		return false;
@@ -347,7 +347,7 @@ bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg )
 	hr=Primary->Play(0,0,DSBPLAY_LOOPING);
 	if (hr!=DS_OK)
 	{
-		ErrMsg="SoundEngine (Fatal Error) : Primary->Play : ";
+		ErrMsg=L"SoundEngine (Fatal Error) : Primary->Play : ";
 		ErrMsg+=GetDxSoundErrorDesc(hr); 
 		LOG(ErrMsg);
 		return false;
@@ -366,7 +366,7 @@ bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg )
 	hr=OggBuffer->QueryInterface(IID_IDirectSoundNotify,(void**)&OggNotify);
 	if (hr!=DS_OK)
 	{
-		ErrMsg="SoundEngine (Fatal Error) : OggBuffer->QueryInterface :";
+		ErrMsg=L"SoundEngine (Fatal Error) : OggBuffer->QueryInterface :";
 		ErrMsg+=GetDxSoundErrorDesc(hr);
 		LOG(ErrMsg);
 		return false;
@@ -387,7 +387,7 @@ bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg )
 	hr=OggNotify->SetNotificationPositions(2,PosNotify);
 	if (hr!=DS_OK)
 	{
-		ErrMsg="SoundEngine (Error): SetNotificationPositions : ";
+		ErrMsg=L"SoundEngine (Error): SetNotificationPositions : ";
 		ErrMsg+=GetDxSoundErrorDesc(hr);
 		LOG(ErrMsg);
 		return false;
@@ -398,7 +398,7 @@ bool TSoundEngine::Create( HWND hWnd, std::string &ErrMsg )
 	hr=OggBuffer->Play(0,0,DSBPLAY_LOOPING);
 	if (hr!=DS_OK)
 	{
-		ErrMsg="SfxCore (Error):OggBuffer->Play : ";
+		ErrMsg=L"SfxCore (Error):OggBuffer->Play : ";
 		ErrMsg+=GetDxSoundErrorDesc(hr);
 		LOG(ErrMsg);
 		return false;
@@ -553,86 +553,86 @@ void TSoundEngine::SetSoundVolume(float NewVolume)
 	}
 };
 
-const char* GetDxSoundErrorDesc(const HRESULT Hr)
+const wchar_t* GetDxSoundErrorDesc(const HRESULT Hr)
 {
 	switch (Hr)
 	{
 		// The call succeeded, but we had to substitute the 3D algorithm
 		case DS_NO_VIRTUALIZATION:
-			return "No Virtualization";
+			return L"No Virtualization";
 		// The call failed because resources (such as a priority level)
 		// were already being used by another caller
 		case DSERR_ALLOCATED:    
-            return "Already Allocated";
+            return L"Already Allocated";
 		// The control (vol, pan, etc.) requested by the caller is not available
 		case DSERR_CONTROLUNAVAIL:          
-			return "Unavailable Control";
+			return L"Unavailable Control";
 		// An invalid parameter was passed to the returning function
 		case DSERR_INVALIDPARAM:
-			return "Invalid Parameter";
+			return L"Invalid Parameter";
 		// This call is not valid for the current state of this object
 		case DSERR_INVALIDCALL:               
-			return "Invalid Call";
+			return L"Invalid Call";
 		// An undetermined error occurred inside the DirectSound subsystem
 		case DSERR_GENERIC:   
-			return "Unknown Error !!!";
+			return L"Unknown Error !!!";
 		// The caller does not have the priority level required for the function to
 		// succeed
 		case DSERR_PRIOLEVELNEEDED:   
-			return "Bad Priority Level";
+			return L"Bad Priority Level";
 		// Not enough free memory is available to complete the operation
 		case DSERR_OUTOFMEMORY: 
-			return "Out Of Memory";
+			return L"Out Of Memory";
 		// The specified WAVE format is not supported
 		case DSERR_BADFORMAT:   
-			return "Bad Wave Format";
+			return L"Bad Wave Format";
 		// The function called is not supported at this time
 		case DSERR_UNSUPPORTED:
-			return "Unsupported Function";
+			return L"Unsupported Function";
 		// No sound driver is available for use
 		case DSERR_NODRIVER:   
-			return "No Sound Drive";
+			return L"No Sound Drive";
 		// This object is already initialized
 		case DSERR_ALREADYINITIALIZED:   
-			return "Already Initialized";
+			return L"Already Initialized";
 		// This object does not support aggregation
 		case DSERR_NOAGGREGATION:   
-			return "No Aggregation Possible";
+			return L"No Aggregation Possible";
 		// The buffer memory has been lost, and must be restored
 		case DSERR_BUFFERLOST:              
-			return "Buffer Lost";
+			return L"Buffer Lost";
 		// Another app has a higher priority level, preventing this call from
 		// succeeding
 		case DSERR_OTHERAPPHASPRIO:     
-			return "Another App Has Priority";
+			return L"Another App Has Priority";
 		// This object has not been initialized
 		case DSERR_UNINITIALIZED:  
-			return "Unitialized Object";
+			return L"Unitialized Object";
 		// The requested COM interface is not available
 		case DSERR_NOINTERFACE:   
-			return "Interface Unavailable";
+			return L"Interface Unavailable";
 		// Access is denied
 		case DSERR_ACCESSDENIED:       
-			return "Access Denied";
+			return L"Access Denied";
 		// Tried to create a DSBCAPS_CTRLFX buffer shorter than DSBSIZE_FX_MIN milliseconds
 		case DSERR_BUFFERTOOSMALL:  
-			return "Buffer Too Small";
+			return L"Buffer Too Small";
 		// Attempt to use DirectSound 8 functionality on an older DirectSound object
 		case DSERR_DS8_REQUIRED:      
-			return "Ds8 Is Required For This Operation";
+			return L"Ds8 Is Required For This Operation";
 		// A circular loop of send effects was detected
 		case DSERR_SENDLOOP:   
-			return "Circular Fx Loop";
+			return L"Circular Fx Loop";
 		// The GUID specified in an audiopath file does not match a valid MIXIN buffer
 		case DSERR_BADSENDBUFFERGUID:     
-			return "Bad GUID";
+			return L"Bad GUID";
 		// The object requested was not found (numerically equal to DMUS_E_NOT_FOUND)
 		case DSERR_OBJECTNOTFOUND:           
-			return "Object Not Found";
+			return L"Object Not Found";
 		// The effects requested could not be found on the system, or they were found
 		// but in the wrong order, or in the wrong hardware/software locations.
 		case DSERR_FXUNAVAILABLE: 
-            return "Fx Unavailable";
+            return L"Fx Unavailable";
 	}
-	return " ";
+	return L" ";
 };

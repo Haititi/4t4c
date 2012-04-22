@@ -3,7 +3,7 @@
 #include "GfxEngine.h" 
 #include "SystemInfo.h"
 #include "Netcore.h"
-#include "Localizer.h"
+#include "LocStr.h"
 #include "App.h"
 #include "Global.h"
 #include "./interface/MainUI.h"

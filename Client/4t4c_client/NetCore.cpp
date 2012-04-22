@@ -37,7 +37,7 @@ TNetworkCore::~TNetworkCore(void)
 };
 
 
-bool TNetworkCore::Setup(const char* Ip,unsigned short Port)
+bool TNetworkCore::Setup(std::string& Ip,unsigned short Port)
 {
 	TheSocket = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -57,7 +57,7 @@ bool TNetworkCore::Setup(const char* Ip,unsigned short Port)
 
 		SendSockAddr.sin_family = AF_INET;
 		SendSockAddr.sin_port = htons(Port);
-		SendSockAddr.sin_addr.S_un.S_addr = inet_addr( Ip );
+		SendSockAddr.sin_addr.S_un.S_addr = inet_addr( Ip.c_str() );
 
 
 		//bind setup the SOURCE PORT and SOURCE IP,  dest ip and dest port are indicated with sendto

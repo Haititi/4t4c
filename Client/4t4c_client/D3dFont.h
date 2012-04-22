@@ -3,6 +3,10 @@
 
 #include "Headers.h"
 #include "GfxEngine.h"
+#include "freetype\FreeTypeAmalgam.h"
+#include "HashPool.h"
+#include "lock.h"
+#include "StringUtils.h"
 
 const unsigned long FormatColorTable[10]=
 {
@@ -18,24 +22,6 @@ const unsigned long FormatColorTable[10]=
 	0xFF302E27, //DarkDarkGrey
 };
 
-struct TFontCoord
-{
-	unsigned long Width;
-	float Tu1,Tu2,Tv1,Tv2;
-};
-
-struct TFontInfo  //todo :we need a more complex structure here, which take kerning into account
-{
-	char* FontName;
-	unsigned long Sizex;
-	unsigned long Sizey;
-	unsigned long BaseHeight;
-	TFontCoord FontCoord[256];
-	LPDIRECT3DTEXTURE9 Texture;
-};
-
-typedef TFontInfo *PFontInfo;
-
 const unsigned long TextFX_NoFx		=0;
 const unsigned long TextFX_Bold		=1;
 const unsigned long TextFX_Shadow	=2;
@@ -48,8 +34,6 @@ const unsigned long TextJustify_Right=2;
 const unsigned long TextJustify_Even=0; //take all space from right to left, block like formatting
 
 
-class TD3dFont;
-
 struct ETextElemType
 {
 	enum Enum
@@ -57,6 +41,84 @@ struct ETextElemType
 		Character=0,
 		Quad=1
 	};
+};
+
+
+
+class FontInstance;
+
+class FreeTypeMgr : public CriticalSection
+{
+private:
+	FT_Library Library;
+	std::wstring FontDir;
+
+	FreeTypeMgr(void);
+public:
+	static FreeTypeMgr& Instance(void);
+
+	~FreeTypeMgr(void);
+	FontInstance* InstanciateFont(std::wstring FontName, unsigned int FontSize);
+}; 
+
+class TD3dText;
+
+class FontInstance
+{
+	friend FreeTypeMgr;
+private:
+	CriticalSection Lock;
+
+	FT_Library Lib;
+	FT_Face Face;
+
+	int PixelMetrics;
+
+	bool FaceKerning;
+
+	THashPool GlyphCache;
+
+	FontInstance(FT_Library pLib,FT_Face pFace);
+	FT_Glyph GetGlyph(const unsigned long CharCode);
+public:
+	~FontInstance(void){FT_Done_Face(Face);};
+	void SetFontSize(int NewSize);
+	float GetHeight(void);
+	int GetLen(std::wstring& Text);
+
+	void Draw(const int PosX,const int PosY,std::wstring Text,const unsigned long Color,bool=true);//for backward compat, direct draw to screen, DON'T USE IT PLEASE
+	void DrawSpecial(QuadTexture* Surface,std::wstring& Text);//draw chat formatted text
+
+	void DrawFont( QuadTexture* Surface, const int Px,const int Py, const char* Text,	const unsigned long Color, bool Gen=true);
+	void DrawFont( QuadTexture* Surface, const int Px,const int Py, std::string& Text,	const unsigned long Color, bool Gen=true);
+	void DrawFont( QuadTexture* Surface, const int Px,const int Py, std::wstring& Text,	const unsigned long Color, bool Gen=true);
+
+	void DrawFinal( QuadTexture* Surface,const int Px, const int Py,Utf32String& Str,const unsigned long Color,bool Gen=true);
+
+	TD3dText* CreateTextObject(void);
+	int TextOff(std::wstring& Text,int FrameSize);
+};
+
+struct ECharStyle
+{
+	enum Enum
+	{
+		NoFx,
+		Bold,
+		Italic,
+		Underlined,
+		Shadowed
+	};
+};
+
+struct FormattedCharacter
+{
+	unsigned long CharCode; //utf32 code
+	unsigned long Color; 
+	ECharStyle::Enum Style;
+
+	FormattedCharacter(unsigned long pCharCode,unsigned long pColor,ECharStyle::Enum pStyle)
+	{CharCode=pCharCode;Color=pColor;Style=pStyle;};
 };
 
 struct TTextElem
@@ -73,7 +135,7 @@ public:
 class TD3dText
 {
 private:
-	TD3dFont *FontRef;
+	FontInstance* FontRef;
 	unsigned long Fx;
 	unsigned long Color;
 	unsigned long Justify;
@@ -94,28 +156,29 @@ private:
 	unsigned long ActualColor;
 	std::vector<TTextElem>TextBuffer; 
 
-	char* BaseText;
+	std::wstring BaseText;
 	//TODO that object should maybe have a critical section to prevent formating at the same time than settext??
 	void Reformat(void);//reformat the text according to changes
 	void AddCharToBuffer(const int Posx,const int Posy,const char Chr,const unsigned long Color,const int Italic);
 	void AddQuadToBuffer(const int Posx,const int Posy,const int SizeX,const int SizeY,const unsigned long Color);
 	void ClearTextBuffer(void);
-	void LineRenderRaw(const int Posx,const int PosY,const char* Text,const unsigned long Color);
-	void LineRender(const int Posx,const int PosY,const char* Text,const unsigned long Color);
+	void LineRenderRaw(const int Posx,const int PosY,std::wstring& Text,const unsigned long Color);
+	void LineRender(const int Posx,const int PosY,std::wstring& Text,const unsigned long Color);
 public:
-	TD3dText(TD3dFont* Reference);
+	TD3dText(FontInstance* Reference);
 	~TD3dText(void);
 	int GetWidth(void);
 	int GetHeight(void);
-	void ChangeFont(TD3dFont* NewFont);
+	void ChangeFont(FontInstance* NewFont);
 	void SetFormatTag(const bool NewState);
 	void SetPosition(const int NewPx,const int NewPy); 
-	void SetText(const char* Text);
+	void SetText(std::wstring Text);
+	void ClearText(void); 
 	void SetColor(const unsigned long NewColor);
 	void SetBackGround(const bool NewState);
 	void SetJustify(const unsigned long NewJustify);
 	void SetFx(const unsigned long NewFx);
-	const char* GetText(void);
+	std::wstring GetText(void);
 	void SetMaxLines(const int NewMaxLines);
 	void SetMaxSize(const int NewMaxWidth,const int NewMaxHeight);
 	void ChangeLineOffset(const int NewLineOffset); //the line we start with
@@ -125,7 +188,7 @@ public:
 	void Draw(void);
 	void DrawAt(const int Posx,const int Posy);
 };
-
+/*
 class TD3dFont
 {
 private:
@@ -150,21 +213,5 @@ public:
 	void Draw(int PosX,int PosY,const char* Text,const unsigned long Color);//draw transparent raw text 
 };
 
-
-class TFontManager
-{
-private:
-	bool Initialized;
-	int FontCount;
-	PFontInfo FontInfoArray;
-public:
-	TFontManager(void);
-	~TFontManager(void);
-
-	bool LoadFontInfo(const char* FileName);
-	TD3dFont* CreateFont(const char* FontName);
-};
-
-extern TFontManager FontManager;
-
+*/
 #endif

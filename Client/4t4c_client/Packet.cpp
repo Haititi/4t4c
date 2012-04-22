@@ -125,34 +125,30 @@ void TPacket::WriteULong(const unsigned long Value)
 	Position=VoidAddr(Position+sizeof(unsigned long));
 }
 
-void TPacket::WriteShortString(const char*const Str)
+void TPacket::WriteShortString(std::wstring& Str)
 {
-	if (Str!=0)
+	if (Str.size())
 	{
-		const unsigned short Len=strlen(Str);
+		const unsigned short Len=Str.size();
 		WriteUShort(Len);
-		WriteData(Str,Len);
+		WriteData(Str.c_str(),Len*sizeof(wchar_t));
 	} else
 	{
 		WriteUShort(0);
 	}
 };
 
-char* TPacket::ReadShortString()
+std::wstring TPacket::ReadShortString()
 {
 	const unsigned short Len=ReadUShort();
-	char* Result;
+	wchar_t Tmp[512];
 	if (Len!=0)
 	{
-		Result=new char[Len+1];
-		ReadData(Result,Len);	
-	}else
-	{
-		Result=new char[1];
+		ReadData(Tmp,Len*sizeof(wchar_t));
 	}
-	Result[Len]=0;
+	Tmp[Len]=0;
 	
-	return Result;
+	return std::wstring(Tmp);
 };
 
 signed char TPacket::ReadChar(void)
@@ -210,24 +206,6 @@ __int64 TPacket::ReadInt64(void)
 	return Result;
 };
 
-void TPacket::CopyShortString(char * Str,int DestSize)
-{
-	unsigned short Len=ReadUShort();
-	Str[0]=0;
-	if (Len!=0)
-	{
-		if((GetIntPosition()+ Len)<BufferSize)
-		{
-			if (Len>DestSize)
-				Len=DestSize-1;
-			for (int i=0;i<Len;i++)
-				Str[i]=*(((char*)Position)+i);
-			Str[Len]=0;
-		}
-		Position=VoidAddr(Position+Len);
-	}
-};
-
 void TPacket::Pack_RQ_PlayerMove(ECharDirection::Enum Direction)//1-8
 {
 	if ((Direction==0) || (Direction>8))
@@ -246,7 +224,7 @@ void TPacket::Pack_RQ_ExitGame(void)//20
 	SetPakId(RQ_ExitGame);
 }
 
-void TPacket::Pack_RQ_DeleteCharacter(const char* CharName)
+void TPacket::Pack_RQ_DeleteCharacter(std::wstring& CharName)
 {
 	SetPakId(RQ_DeletePlayer);
 	WriteShortString(CharName);
@@ -289,7 +267,7 @@ void TPacket::Pack_RQ_SendStatTrain(const char Str,const char End,const char Agi
 	WriteUChar(Luk);
 };
 
-void TPacket::Pack_RQ_Page(const char* Name,const char* Msg)//29
+void TPacket::Pack_RQ_Page(std::wstring& Name,std::wstring& Msg)//29
 {
 	SetPakId(RQ_Page);
 	WriteShortString(Name);
@@ -308,7 +286,7 @@ void TPacket::Pack_RQ_GetNearItems(void)
 	SetPakId(RQ_GetNearItems);
 };
 
-void TPacket::Pack_RQ_Shout(const char* Name,const char* Msg,const long Color)
+void TPacket::Pack_RQ_Shout(std::wstring& Name,std::wstring& Msg,const long Color)
 {
 	SetPakId(RQ_Shout);
 	WriteShortString(Name);
@@ -316,7 +294,7 @@ void TPacket::Pack_RQ_Shout(const char* Name,const char* Msg,const long Color)
 	WriteShortString(Msg);
 };
 
-void TPacket::Pack_RQ_DirectedTalk(const short PosX,const short PosY,const unsigned long Id,const char Direction,const unsigned long Color,const char* Msg)//30
+void TPacket::Pack_RQ_DirectedTalk(const short PosX,const short PosY,const unsigned long Id,const char Direction,const unsigned long Color,std::wstring& Msg)//30
 {
 	SetPakId(RQ_DirectedTalk);
 	WriteUShort(PosX);
@@ -324,16 +302,11 @@ void TPacket::Pack_RQ_DirectedTalk(const short PosX,const short PosY,const unsig
 	WriteULong(Id);
 	WriteUChar(Direction);
 	WriteULong(Color);
-	if (Msg)
-	{
-		WriteShortString(Msg);
-	} else
-	{
-		WriteUShort(0);
-	}
+	WriteShortString(Msg);
+
 };
 
-void TPacket::Pack_RQ_UndirectedTalk(const unsigned long Id,const char Direction,const unsigned long Color,const char* Msg)//27
+void TPacket::Pack_RQ_UndirectedTalk(const unsigned long Id,const char Direction,const unsigned long Color,std::wstring& Msg)//27
 {
 	SetPakId(RQ_IndirectTalk);
 	WriteULong(Id);
@@ -373,33 +346,27 @@ void TPacket::Pack_RQ_Attack(const short Posx,const short Posy,const long Id)
 	WriteULong(Id);
 };
 
-void TPacket::Pack_RQ_EnterChannel(const char* Channel,const char *Password)//48
+void TPacket::Pack_RQ_EnterChannel(std::wstring& Channel,std::wstring& Password)//48
 {
 	SetPakId(RQ_EnterChannel);
 	WriteShortString(Channel);
-	if (Password!=NULL)
-	{
-		WriteShortString(Password);
-	} else
-	{
-		WriteUShort(0);
-	}
+	WriteShortString(Password);
 };
 
-void TPacket::Pack_RQ_SendChatterChannelMessage(const char* Channel,const char* Msg)
+void TPacket::Pack_RQ_SendChatterChannelMessage(std::wstring& Channel,std::wstring& Msg)
 {
 	SetPakId(RQ_SendChatterChannelMessage);
 	WriteShortString(Channel);
 	WriteShortString(Msg);
 };
 
-void TPacket::Pack_RQ_GetChannelUsersList(const char* Channel)//50
+void TPacket::Pack_RQ_GetChannelUsersList(std::wstring& Channel)//50
 {
 	SetPakId(RQ_GetChannelUsersList);
 	WriteShortString(Channel);
 };
 
-void TPacket::Pack_RQ_LeaveChannel(const char* Channel)//74
+void TPacket::Pack_RQ_LeaveChannel(std::wstring& Channel)//74
 {
 	SetPakId(RQ_LeaveChannel);
 	WriteShortString(Channel);
@@ -410,7 +377,7 @@ void TPacket::Pack_RQ_GetPublicChannelList(void)//75
 	SetPakId(RQ_GetPublicChannelList);
 };
 
-void TPacket::Pack_RQ_ToggleChannelListening(const char* Channel,const char State)//86
+void TPacket::Pack_RQ_ToggleChannelListening(std::wstring& Channel,const char State)//86
 {
 	SetPakId(RQ_ToggleChannelListening);
 	WriteShortString(Channel);
@@ -468,7 +435,7 @@ void TPacket::Pack_RQ_GroupToggleAutoSplit(const char State)//88
 	WriteUChar(State);
 };
 
-void TPacket::Pack_RQ_PutPlayerInGame(const char *CharName)
+void TPacket::Pack_RQ_PutPlayerInGame(std::wstring& CharName)
 {
 	SetPakId(RQ_PutPlayerInGame); //PutPlayerIngame
 	WriteShortString(CharName);
@@ -488,7 +455,7 @@ void TPacket::Pack_RQ_SendPeriphericObjects(const char Direction,const short Pos
 	WriteUShort(PosY);
 };
 
-void TPacket::Pack_RQ_RegisterAccount(const char* Login,const char* Password,const short Version)//14
+void TPacket::Pack_RQ_RegisterAccount(std::wstring& Login,std::wstring& Password,const short Version)//14
 {
 	SetPakId(RQ_RegisterAccount);
 	WriteShortString(Login);

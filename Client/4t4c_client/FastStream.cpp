@@ -57,12 +57,12 @@ void TFastStream::Seek(unsigned int n)
 	Position=VoidAddr(Memory+n);
 };
 
-bool TFastStream::LoadFromFile(const char *n)
+bool TFastStream::LoadFromFile(std::wstring FileName)
 {
 	HANDLE FileHdl;
 	unsigned int FSize;
 	unsigned long NbRead;
-	FileHdl=CreateFile(n,GENERIC_ALL,0,0,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,0);
+	FileHdl=CreateFileW(FileName.c_str(),GENERIC_ALL,0,0,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,0);
 	if (FileHdl==INVALID_HANDLE_VALUE)
 		return false;
 	FSize=GetFileSize(FileHdl,NULL);
@@ -76,11 +76,11 @@ bool TFastStream::LoadFromFile(const char *n)
 	return true;
 }
 
-void TFastStream::SaveToFile(const char *n)
+void TFastStream::SaveToFile(std::wstring FileName)
 {
 	HANDLE FileHdl;
 	unsigned long NbWrite;
-	FileHdl=CreateFile(n,GENERIC_ALL,0,0,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,0);
+	FileHdl=CreateFileW(FileName.c_str(),GENERIC_ALL,0,0,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,0);
 	WriteFile(FileHdl,Memory,Size,&NbWrite,NULL);
 	//todo : should check nbwrite against streamsize
 	CloseHandle(FileHdl);

@@ -1,7 +1,6 @@
 #ifndef HASHPOOL_H
 #define HASHPOOL_H
 
-#include "Headers.h"
 //store a pointer  related to an associated Key
 
 struct THashItem

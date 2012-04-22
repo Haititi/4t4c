@@ -1,7 +1,7 @@
 #ifndef HASH_H
 #define HASH_H
 
-#include "Headers.h"
+#include <string>
 
 void InitRandHash(void);
 

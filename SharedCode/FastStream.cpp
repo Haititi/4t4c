@@ -1,5 +1,7 @@
 #include "FastStream.h"
+#include <Windows.h>
 
+#define VoidAddr(Obj) (unsigned int*)((unsigned int)Obj)
 
 TFastStream::TFastStream(void)
 {

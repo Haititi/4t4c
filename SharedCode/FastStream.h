@@ -1,8 +1,8 @@
 #ifndef FASTSTREAM_H
 #define FASTSTREAM_H
 
-#include "Headers.h"
-#define VoidAddr(Obj) (unsigned int*)((unsigned int)Obj)
+#include <string>
+
 
 class TFastStream
 {

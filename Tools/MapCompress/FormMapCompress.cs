@@ -45,7 +45,7 @@ namespace MapCompress
             {
                 for (int NumX = 0; NumX < 24; NumX++)
                 {
-                    Index1 = MapFile.Position + Num;                
+                    Index1 = Num * 4;                
                     MapFile.Seek(Index1, SeekOrigin.Begin);
                     Index2 = MapFile.Position + Br.ReadUInt32();
                     MapFile.Seek(Index2, SeekOrigin.Begin);

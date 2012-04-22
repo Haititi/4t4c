@@ -1,19 +1,19 @@
 #ifndef LOCK_H
 #define LOCK_H
 
-#include <windows.h>
+#include "Headers.h"
 
-class CriticalSection  
+class CriticalSection
 {
 private:
     CRITICAL_SECTION CritSect;
 
 public:
-    CriticalSection()
+    CriticalSection(void)
 	{ 
         InitializeCriticalSection( &CritSect ); 
     };
-    ~CriticalSection()
+    ~CriticalSection(void)
 	{
         DeleteCriticalSection( &CritSect );
     };
@@ -38,19 +38,15 @@ public:
 class ScopedLock 
 {
 private:
-	CriticalSection *Lock;
+	CriticalSection& Lock;
 public:
-	ScopedLock(CriticalSection *pLock):Lock(pLock)
+	ScopedLock(CriticalSection &pLock):Lock(pLock)
 	{
-		Lock->Lock();
-	};
-	ScopedLock(CriticalSection &pLock):Lock(&pLock)
-	{
-		Lock->Lock();
+		Lock.Lock();
 	};
 	~ScopedLock(void)
 	{
-		Lock->Unlock();
+		Lock.Unlock();
 	};
 };
 

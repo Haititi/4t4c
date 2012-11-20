@@ -6,18 +6,17 @@
 #include "LocStr.h"
 #include "App.h"
 #include "Global.h"
-#include "./interface/MainUI.h"
+#include "UI_Main.h"
 #include "GameUtils.h"
 #include "Config.h"
-#include "TGameObject.h"
-#include "macrohandler.h"
-#include "GameTime.h"
+#include "GameObject.h"
+#include "MacroManager.h"
+#include "TimeTracker.h"
 
-//we include it here , not in headers.haaaaaaaa : it has some problematic macro
+//we include it here , not in headers.h : it has some problematic macro
 #include <WindowsX.h>
 
-TInputManager Input;
-TMouseCursor MouseCursor;
+MouseManager MouseCursor;
 
 const int NbCursors=6;
 unsigned long ActualCursor;
@@ -26,28 +25,26 @@ const float DblClickTime=0.2f;
 const int DragDist=16;
 
 //
-TAnimSprite *Cursors[19];
-TAnimSprite MouseCursor1; //norm
-TAnimSprite MouseCursor2;
-TAnimSprite MouseCursor3;
-TAnimSprite MouseCursor5;//norm
-TAnimSprite MouseCursor6;//norm
-TAnimSprite MouseCursor7;//norm
-TAnimSprite MouseCursor8;//norm
-TAnimSprite MouseCursor9;//norm
-TAnimSprite MouseCursor10;//norm
-TAnimSprite MouseCursor11;//norm
-TAnimSprite MouseCursor12;//norm
-TAnimSprite MouseCursor16;
-TAnimSprite MouseCursor17;
-TAnimSprite MouseCursor18;
+AnimatedSprite *Cursors[19];
+AnimatedSprite MouseCursor1; //norm
+AnimatedSprite MouseCursor2;
+AnimatedSprite MouseCursor3;
+AnimatedSprite MouseCursor5;//norm
+AnimatedSprite MouseCursor6;//norm
+AnimatedSprite MouseCursor7;//norm
+AnimatedSprite MouseCursor8;//norm
+AnimatedSprite MouseCursor9;//norm
+AnimatedSprite MouseCursor10;//norm
+AnimatedSprite MouseCursor11;//norm
+AnimatedSprite MouseCursor12;//norm
+AnimatedSprite MouseCursor16;
+AnimatedSprite MouseCursor17;
+AnimatedSprite MouseCursor18;
 
-TAnimSprite AttackCursorIcon;
+AnimatedSprite AttackCursorIcon;
 
-
-
-
-TInputManager::TInputManager( void )
+InputManager::InputManager( void )
+	:DragState(0,0)
 {
 	MouseDown=false;
 	Dragging=false;
@@ -60,32 +57,38 @@ TInputManager::TInputManager( void )
 	LockEvent[0]=LockEvent[1]=LockEvent[2]=LockEvent[3]=0;
 	OverUI=0;
 	for (unsigned int i=0;i<8;i++)
-		ButtonTimer[i]=TimeStruct.GetGlobalTime();
+		ButtonTimer[i]=GameTime.GetGlobalTime();
 }
 
+InputManager& InputManager::Inst(void)
+{
+	static InputManager Instance;
+	return Instance;
+};
 
-TInputManager::~TInputManager( void )
+
+InputManager::~InputManager( void )
 {
 }
 
-bool TInputManager::DragDetect(void)
+bool InputManager::DragDetect(void)
 {
 	return MouseDown && (abs((DragState.X-PosX)*(DragState.Y-PosY))>DragDist);
 };
 
-void TInputManager::StoreMessage(const unsigned int MessageType,const unsigned int Param1,const unsigned int Param2)
+void InputManager::StoreMessage(const unsigned int MessageType,const unsigned int Param1,const unsigned int Param2)
 {
 	ScopedLock Al(Lock);
-	InputMessageList.push_back(TInputMessage(MessageType,Param1,Param2,TimeStruct.GetGlobalTime()));
+	InputMessageList.push_back(InputMessage(MessageType,Param1,Param2,GameTime.GetGlobalTime()));
 };
 
-void TInputManager::SetOverUI(TGameUI* GameUI)
+void InputManager::SetOverUI(UI_Base* GameUI)
 {
 	if (GameUI!=OverUI)
 	{
 		if (OverUI!=0)
 		{
-			TMouseEvent Event(EMouseEventType::Leave,PosX,PosY,false);
+			TMouseEvent Event(EMouseEventType::Leave,EMouseButton::None,PosX,PosY,false);
 			//send a mouseLeave
 			OverUI->ProcessEvent(&Event);
 		}
@@ -94,7 +97,7 @@ void TInputManager::SetOverUI(TGameUI* GameUI)
 
 		if (OverUI!=0)
 		{
-			TMouseEvent Event(EMouseEventType::Enter,PosX,PosY,false);
+			TMouseEvent Event(EMouseEventType::Enter,EMouseButton::None,PosX,PosY,false);
 			//send a mouseLeave
 			OverUI->ProcessEvent(&Event);
 		}
@@ -108,7 +111,7 @@ void TInputManager::SetOverUI(TGameUI* GameUI)
 	
 };
 
-void TInputManager::ProcessMessageList(void)
+void InputManager::ProcessMessageList(void)
 {
 	ScopedLock Al(Lock);
 
@@ -119,10 +122,10 @@ void TInputManager::ProcessMessageList(void)
 
 	for(unsigned int i=0;i<InputMessageList.size();i++)
 	{
-		const TInputMessage &Message=InputMessageList[i];
+		const InputMessage &Message=InputMessageList[i];
 		switch  (Message.MessageType)
 		{
-			//mouse->QueueDrag( TMousePos( TInputManager::xPos, TInputManager::yPos ) );
+			//mouse->QueueDrag( TMousePos( InputManager::xPos, InputManager::yPos ) );
 		case WM_MOUSEMOVE:
 			{
 				PosX=GET_X_LPARAM(Message.Param2);
@@ -131,23 +134,23 @@ void TInputManager::ProcessMessageList(void)
 				{
 					//dragging init
 					Dragging=true;
-					DragObj=new TDragObject(PosX,PosY);
-					Event=new TMouseEvent(EMouseEventType::StartDrag,PosX,PosY,false);
+					DragObj=new Event_DragObject(PosX,PosY);
+					Event=new TMouseEvent(EMouseEventType::StartDrag,EMouseButton::None,PosX,PosY,false);
 					Event->DragObject=DragObj;
 				}else 
 				if (Dragging && CaptureUI==0)
 				{
 					//dragging over
-					Event=new TMouseEvent(EMouseEventType::DragOver,PosX,PosY,false);
+					Event=new TMouseEvent(EMouseEventType::DragOver,EMouseButton::None,PosX,PosY,false);
 					Event->DragObject=DragObj;
 				} else
 				{
 					//nothing special
-					Event=new TMouseEvent(EMouseEventType::Move,PosX,PosY,false);
+					Event=new TMouseEvent(EMouseEventType::Move,EMouseButton::None,PosX,PosY,false);
 					
 				}
 				if (CaptureUI==0)
-					RetVal = TMainUI::GetInst().ProcessEvent(Event);
+					RetVal = UI_Main::Inst().ProcessEvent(Event);
 				else 
 					RetVal = CaptureUI->ProcessEvent(Event);
 
@@ -167,16 +170,16 @@ void TInputManager::ProcessMessageList(void)
 				PosX=(short)(Message.Param2 & 0xFFFF);
 				PosY=(short)(Message.Param2 >> 16);
 
-				Event=new TMouseEvent(EMouseEventType::LeftDn,PosX,PosY,(TimeStruct.GetGlobalTime()-ButtonTimer[0])<DblClickTime);
+				Event=new TMouseEvent(EMouseEventType::ButtonDown,EMouseButton::Left,PosX,PosY,(GameTime.GetGlobalTime()-ButtonTimer[0])<DblClickTime);
 		
 				DragState.X=PosX;
 				DragState.Y=PosY;
 				MouseDown=true; //to detect drag
 				
-				ButtonTimer[0]=TimeStruct.GetGlobalTime();
+				ButtonTimer[0]=GameTime.GetGlobalTime();
 
 				if (CaptureUI==0)
-					RetVal = TMainUI::GetInst().ProcessEvent(Event);
+					RetVal = UI_Main::Inst().ProcessEvent(Event);
 				else 
 					RetVal = CaptureUI->ProcessEvent(Event);
 
@@ -189,17 +192,17 @@ void TInputManager::ProcessMessageList(void)
 				if (Dragging)
 				{
 					//drop 
-					Event=new TMouseEvent(EMouseEventType::DragDrop,PosX,PosY,false);
+					Event=new TMouseEvent(EMouseEventType::DragDrop,EMouseButton::None,PosX,PosY,false);
 					Event->DragObject=DragObj;
 				} else
 				{
 					//normal btn up
-					Event=new TMouseEvent(EMouseEventType::LeftUp,PosX,PosY,false);
+					Event=new TMouseEvent(EMouseEventType::ButtonUp,EMouseButton::Left,PosX,PosY,false);
 				}
 				MouseDown=false;
 
 				if (CaptureUI==0)
-					RetVal = TMainUI::GetInst().ProcessEvent(Event);
+					RetVal = UI_Main::Inst().ProcessEvent(Event);
 				else 
 					RetVal = CaptureUI->ProcessEvent(Event);
 				if (Dragging)
@@ -213,11 +216,11 @@ void TInputManager::ProcessMessageList(void)
 			{
 				PosX=(short)(Message.Param2 & 0xFFFF);
 				PosY=(short)(Message.Param2 >> 16);
-				Event=new TMouseEvent(EMouseEventType::RightDn,PosX,PosY,(TimeStruct.GetGlobalTime()-ButtonTimer[2])<DblClickTime);
-				ButtonTimer[2]=TimeStruct.GetGlobalTime();
+				Event=new TMouseEvent(EMouseEventType::ButtonDown,EMouseButton::Right,PosX,PosY,(GameTime.GetGlobalTime()-ButtonTimer[2])<DblClickTime);
+				ButtonTimer[2]=GameTime.GetGlobalTime();
 
 				if (CaptureUI==0)
-					RetVal = TMainUI::GetInst().ProcessEvent(Event);
+					RetVal = UI_Main::Inst().ProcessEvent(Event);
 				else 
 					RetVal = CaptureUI->ProcessEvent(Event);
 				break;
@@ -226,10 +229,10 @@ void TInputManager::ProcessMessageList(void)
 			{
 				PosX=(short)(Message.Param2 & 0xFFFF);
 				PosY=(short)(Message.Param2 >> 16);
-				Event=new TMouseEvent(EMouseEventType::RightUp,PosX,PosY,false);
+				Event=new TMouseEvent(EMouseEventType::ButtonUp,EMouseButton::Right,PosX,PosY,false);
 
 				if (CaptureUI==0)
-					RetVal = TMainUI::GetInst().ProcessEvent(Event);
+					RetVal = UI_Main::Inst().ProcessEvent(Event);
 				else 
 					RetVal = CaptureUI->ProcessEvent(Event);
 				break;
@@ -238,12 +241,12 @@ void TInputManager::ProcessMessageList(void)
 			{
 				PosX=(short)(Message.Param2 & 0xFFFF);
 				PosY=(short)(Message.Param2 >> 16);
-				Event=new TMouseEvent(EMouseEventType::MiddleDn,PosX,PosY,(TimeStruct.GetGlobalTime()-ButtonTimer[1])<DblClickTime);
+				Event=new TMouseEvent(EMouseEventType::ButtonDown,EMouseButton::Middle,PosX,PosY,(GameTime.GetGlobalTime()-ButtonTimer[1])<DblClickTime);
 				
-				ButtonTimer[1]=TimeStruct.GetGlobalTime();
+				ButtonTimer[1]=GameTime.GetGlobalTime();
 
 				if (CaptureUI==0)
-					RetVal = TMainUI::GetInst().ProcessEvent(Event);
+					RetVal = UI_Main::Inst().ProcessEvent(Event);
 				else 
 					RetVal = CaptureUI->ProcessEvent(Event);
 				break;
@@ -252,10 +255,10 @@ void TInputManager::ProcessMessageList(void)
 			{
 				PosX=(short)(Message.Param2 & 0xFFFF);
 				PosY=(short)(Message.Param2 >> 16);
-				Event=new TMouseEvent(EMouseEventType::MiddleUp,PosX,PosY,false);
+				Event=new TMouseEvent(EMouseEventType::ButtonUp,EMouseButton::Middle,PosX,PosY,false);
 
 				if (CaptureUI==0)
-					RetVal = TMainUI::GetInst().ProcessEvent(Event);
+					RetVal = UI_Main::Inst().ProcessEvent(Event);
 				else 
 					RetVal = CaptureUI->ProcessEvent(Event);
 				break;
@@ -266,14 +269,14 @@ void TInputManager::ProcessMessageList(void)
 				const int Z=GET_WHEEL_DELTA_WPARAM(Message.Param1)/WHEEL_DELTA; 
 				if (Z>0)
 				{
-					Event=new TMouseEvent(EMouseEventType::WheelUp,PosX,PosY,false);
+					Event=new TMouseEvent(EMouseEventType::WheelUp,EMouseButton::None,PosX,PosY,false);
 				}
 				else
 				{
-					Event=new TMouseEvent(EMouseEventType::WheelDn,PosX,PosY,false);
+					Event=new TMouseEvent(EMouseEventType::WheelDn,EMouseButton::None,PosX,PosY,false);
 				}
 				if (CaptureUI==0)
-					RetVal = TMainUI::GetInst().ProcessEvent(Event);
+					RetVal = UI_Main::Inst().ProcessEvent(Event);
 				else 
 					RetVal = CaptureUI->ProcessEvent(Event);
 				break;
@@ -298,10 +301,10 @@ void TInputManager::ProcessMessageList(void)
 					switch( wParam )
 					{
 					case VK_ESCAPE:
-					//TMainUI::GetInst().KbHit( wParam );
+					//UI_Main::Inst().KbHit( wParam );
 					break;
 					default:
-					//boKeyProcess = !TMainUI::GetInst().KbHit( 0, wParam );
+					//boKeyProcess = !UI_Main::Inst().KbHit( 0, wParam );
 					break;
 					}*/
 				}
@@ -311,14 +314,14 @@ void TInputManager::ProcessMessageList(void)
 				// If that's a valid vkey.
 				if( vKey.GetKey() != 0 )
 				{
-					if( !MacroHdl.CallMacro( vKey ) && !MacroUI::GetInstance()->CallMacro( vKey ) )
+					if( !MacroHdl.CallMacro( vKey ) && !UI_MacroSetup::GetInstance()->CallMacro( vKey ) )
 					{
-						TMainUI::GetInst().KeyInput( Key );
+						UI_Main::Inst().KeyInput( Key );
 					}
 				}*/
 
-				KeyEvent=new TKeyEvent(EKeyEventType::KeyDn,Message.Param1 & 0xFF);
-				RetVal = TMainUI::GetInst().ProcessEvent(KeyEvent);
+				KeyEvent=new TKeyEvent(EKeyEventType::KeyDn,(Message.Param2>>16)& 0xFFFF,Message.Param1 & 0xFFFF);
+				RetVal = UI_Main::Inst().ProcessEvent(KeyEvent);
 				break;
 			}
 		case WM_KEYUP:
@@ -337,8 +340,8 @@ void TInputManager::ProcessMessageList(void)
 					}
 				}
 
-				KeyEvent=new TKeyEvent(EKeyEventType::KeyUp,Message.Param1 & 0xFF);
-				RetVal = TMainUI::GetInst().ProcessEvent(KeyEvent);
+				KeyEvent=new TKeyEvent(EKeyEventType::KeyUp,(Message.Param2>>16)& 0xFFFF,Message.Param1 & 0xFFFF);
+				RetVal = UI_Main::Inst().ProcessEvent(KeyEvent);
 				break;
 			}
 		case WM_CHAR:
@@ -351,18 +354,18 @@ void TInputManager::ProcessMessageList(void)
 						break;
 					}
 				}
-				KeyEvent=new TKeyEvent(EKeyEventType::KeyChar,Message.Param1 & 0xFF);
-				RetVal = TMainUI::GetInst().ProcessEvent(KeyEvent);
+				KeyEvent=new TKeyEvent(EKeyEventType::KeyChar,(Message.Param2>>16)& 0xFFFF,Message.Param1 & 0xFFFF);
+				RetVal = UI_Main::Inst().ProcessEvent(KeyEvent);
 /*
 				if ( (GetCtrlState()==0) || ( isprint( Message.Param1 ) || ( Message.Param1 > 128 && Message.Param1 < 256 ) ) ) 
 				{
 					if (Global.InGame) 
 					{
-						if( TMainUI::GetInst().TextInput(Message.Param1 ) )
+						if( UI_Main::Inst().TextInput(Message.Param1 ) )
 						{
 							break;
 						}
-						ChatterUI::GetInstance()->TextInput( Message.Param1 );
+						UI_Chat::Inst().TextInput( Message.Param1 );
 					} 
 				}*/
 				break;
@@ -382,18 +385,18 @@ void TInputManager::ProcessMessageList(void)
 	InputMessageList.clear();
 };
 
-void TInputManager::Initialize(void)
+void InputManager::Initialize(void)
 {
 
 };
 
-void TInputManager::SetPosition(const int NewPosX,const int NewPosY) 
+void InputManager::SetPosition(const int NewPosX,const int NewPosY) 
 {
 	PosX = NewPosX;
 	PosY = NewPosY;
 }
 
-bool TInputManager::LockNextEvent(unsigned long dwEvent, LPVOID lpCustomPtr, unsigned int (* CallBack)(LPVOID), int i) 
+bool InputManager::LockNextEvent(unsigned long dwEvent, LPVOID lpCustomPtr, unsigned int (* CallBack)(LPVOID), int i) 
 {
 	// Refuse mouse event if the mouse is already locked.
 	if( LockEvent[i] != 0 )
@@ -412,7 +415,7 @@ extern bool inAttack;
 
 
 
-TMouseCursor::TMouseCursor(void) 
+MouseManager::MouseManager(void) 
 {
 	ActualCursor = 9+NbCursors;
 	CustomCursor = 0;
@@ -420,11 +423,11 @@ TMouseCursor::TMouseCursor(void)
 	YCor = 0;
 }
 
-TMouseCursor::~TMouseCursor(void) 
+MouseManager::~MouseManager(void) 
 {
 }
 
-void TMouseCursor::SetCustomCursor(TSkinRenderer *NewCursor, int x, int y, bool corr ) 
+void MouseManager::SetCustomCursor(SkinRenderer *NewCursor, int x, int y, bool corr ) 
 {
 	if (CustomCursor)
 	{
@@ -437,7 +440,7 @@ void TMouseCursor::SetCustomCursor(TSkinRenderer *NewCursor, int x, int y, bool 
 	Correction = corr;
 }
 
-void TMouseCursor::ClearCustomCursor(void)
+void MouseManager::ClearCustomCursor(void)
 {
 	if (CustomCursor)
 	{
@@ -449,7 +452,7 @@ void TMouseCursor::ClearCustomCursor(void)
 }
 
 
-void TMouseCursor::DrawCursor(const float DeltaTime,const int x,const int y) 
+void MouseManager::DrawCursor(const float DeltaTime,const int x,const int y) 
 {
 	int xPos = x;
 	int yPos = y;
@@ -487,7 +490,7 @@ void TMouseCursor::DrawCursor(const float DeltaTime,const int x,const int y)
 	}
 }
 
-void TMouseCursor::Initialize(void)
+void MouseManager::Initialize(void)
 {
 	AttackCursorIcon.LoadSprite("staticattackcursor");
 

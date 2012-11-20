@@ -18,7 +18,7 @@ struct ELightLocation
 
 typedef unsigned long TLightTable[1440];
 
-struct TLightStruct
+struct LightStruct
 {
 	int LightPosX; //Woorld coord of the light in PIXEL
 	int LightPosY;
@@ -28,13 +28,13 @@ struct TLightStruct
 	int LightType; //Torch,omni,Spot, Player radiance
 };
 
-class TLightningManager
+class LightningManager
 {
 private:
 	unsigned long NextLightId;
 	unsigned long GetNextLightId(void);
 
-	THashPool LightPool;
+	HashPool LightPool;
 
 	ELightLocation::Enum Location;
 	TLightTable LightTables[ELightLocation::Count];
@@ -45,8 +45,8 @@ private:
 	//the Lightning texture
 	LPDIRECT3DTEXTURE9 LightTexture;
 public:
-	TLightningManager(void);
-	~TLightningManager(void);
+	LightningManager(void);
+	~LightningManager(void);
 	void Initialize(void); //need the gfxengine running
 
 	void SetLocation(ELightLocation::Enum NewLoc);
@@ -56,5 +56,5 @@ public:
 	void Render(float DeltaTime);
 };
 
-extern TLightningManager LightMgr;
+extern LightningManager LightMgr;
 #endif

@@ -5,17 +5,40 @@
 #include "Global.h"
 
 #include "PalDatabase.h"
-#include "TGameObject.h"
+#include "GameObject.h"
 #include "Zlib/zlib.h"
 
 #include "FastStream.h"
 #include "hash.h"
 
+struct ECompType
+{
+	enum Enum
+	{
+		NoComp,
+		Zlib,
+		Lzma,
+	};
+};
+
+struct ETexFormat
+{
+	enum Enum
+	{
+		A8R8G8B8,
+		R5G6B5,
+		A1R5G5B5,  
+		P8,
+		DXT1A,
+		DXT5,
+	};
+};
+
 // Set the Unique Global
-TSpriteDatabase SpriteDb;
+SpriteDatabase SpriteDb;
 TMultiDataAccess DataAccess;
 
-TSpriteDatabase::TSpriteDatabase()
+SpriteDatabase::SpriteDatabase()
 {
 	Dummy.TransColor=0;
 	Dummy.OffsetX=0;
@@ -24,12 +47,12 @@ TSpriteDatabase::TSpriteDatabase()
 	Dummy.OffsetY2=0;
 
 	InitRandHash();
-	IndexHash=new THashPool(40009); //primes number size
+	IndexHash=new HashPool(40009); //primes number size
 
-	THashPool* OffsetHash;
-	OffsetHash=new THashPool(40009);
+	HashPool* OffsetHash;
+	OffsetHash=new HashPool(40009);
 
-	TFastStream FstIdx;
+	FastStream FstIdx;
 	if (!FstIdx.LoadFromFile(L".\\GameFiles\\Index.si"))
 	{
 		LOG("SpriteDatabase : Unable to Load Index.si, Cannot continue\r\n");
@@ -38,13 +61,13 @@ TSpriteDatabase::TSpriteDatabase()
 	};
 	//todo check Checksum
 
-	FstIdx.Read(&SiHeader,sizeof(TSiHeader));
-	SiInfoArray=new TSiInfo[SiHeader.IdxCount];
+	FstIdx.Read(&SiHdr,sizeof(SiHeader));
+	SiInfoArray=new SiInfo[SiHdr.IdxCount];
 
 	//note on remplace toujours par le dernier Sprite aillant le nom X
 	//note2  autant faire l'ajout a l'envers et ne pas remplacer 
-	//	TFastStream FstErr;
-	for(unsigned int i=0;i<SiHeader.IdxCount;i++)
+	//	FastStream FstErr;
+	for(unsigned int i=0;i<SiHdr.IdxCount;i++)
 	{
 		SiInfoArray[i].SpriteName	=FstIdx.ReadLongString();
 		SiInfoArray[i].DataOffset	=FstIdx.ReadLong();
@@ -69,7 +92,7 @@ TSpriteDatabase::TSpriteDatabase()
 	}
 	//FstErr.SaveToFile("Collisions2.txt");
 
-	TFastStream FstOff;
+	FastStream FstOff;
 
 	if (!FstOff.LoadFromFile(L".\\GameFiles\\Offset.dat"))
 	{
@@ -81,7 +104,7 @@ TSpriteDatabase::TSpriteDatabase()
 	
 
 	unsigned long OffCount=FstOff.ReadLong();
-	OldOffsetArray=new TOldOffset[OffCount];
+	OldOffsetArray=new OldOffsetStruct[OffCount];
 	for(unsigned int i=0;i<OffCount;i++)
 	{
 		OldOffsetArray[i].SpriteName	=FstOff.ReadLongString();
@@ -92,7 +115,7 @@ TSpriteDatabase::TSpriteDatabase()
 		OldOffsetArray[i].OffsetY2		=FstOff.ReadWord();
 		OldOffsetArray[i].Transparency	=FstOff.ReadWord();
 		OldOffsetArray[i].TransColor	=FstOff.ReadWord();
-		PSiInfo GInfo=(PSiInfo)IndexHash->GetEntry(RandHash(OldOffsetArray[i].SpriteName));
+		SiInfo* GInfo=(SiInfo*)IndexHash->GetEntry(RandHash(OldOffsetArray[i].SpriteName));
 		if (GInfo)
 		{
 			GInfo->OldOff=&OldOffsetArray[i];
@@ -103,12 +126,12 @@ TSpriteDatabase::TSpriteDatabase()
 	IndexLoaded = true;
 }
 
-TSpriteDatabase::~TSpriteDatabase()
+SpriteDatabase::~SpriteDatabase()
 {
 	if (!IndexLoaded)
 		return;
 	IndexLoaded=false;
-	for (unsigned long i=0;i<SiHeader.IdxCount;i++)
+	for (unsigned long i=0;i<SiHdr.IdxCount;i++)
 	{
 		delete [] SiInfoArray[i].SpriteName;
 	}
@@ -116,13 +139,13 @@ TSpriteDatabase::~TSpriteDatabase()
 	delete IndexHash;
 }
 
-PSiInfo TSpriteDatabase::GetIndexEntry(const char* SpriteName)
+SiInfo* SpriteDatabase::GetIndexEntry(const char* SpriteName)
 {
 	//don't need to be thread safe
-	PSiInfo SpriteInfo=(PSiInfo)IndexHash->GetEntry(RandHash(SpriteName));
+	SiInfo* SpriteInfo=(SiInfo*)IndexHash->GetEntry(RandHash(SpriteName));
 	if( SpriteInfo == 0 )
 	{
-		SpriteInfo=(PSiInfo)IndexHash->GetEntry(RandHash("black tile"));
+		SpriteInfo=(SiInfo*)IndexHash->GetEntry(RandHash("black tile"));
 		//SpriteInfo->OldOff->Transparency=0;
 		OutputDebugStringA(SpriteName);
 		OutputDebugStringA("\r\n");
@@ -132,7 +155,7 @@ PSiInfo TSpriteDatabase::GetIndexEntry(const char* SpriteName)
 	return SpriteInfo;
 };
 
-void TSpriteDatabase::LoadPsi(PSiInfo SpriteInfo)
+void SpriteDatabase::LoadPsi(SiInfo* SpriteInfo)
 {
 	//TODO should be possible to tigthen the lock
 	if (SpriteInfo)
@@ -160,20 +183,20 @@ void TSpriteDatabase::LoadPsi(PSiInfo SpriteInfo)
 
 		switch (SpriteInfo->StoreType) 
 		{
-			case StoreType_NoComp:  // Raw Format.
+		case ECompType::NoComp:  // Raw Format.
 				LoadSprite_NoComp(SpriteInfo,PalettePtr); 
 				break;
-			case StoreType_Zlib:
+		case ECompType::Zlib:
 				LoadSprite_Zlib(SpriteInfo,PalettePtr);
 				break;
-			case StoreType_Lzma: 
+		case ECompType::Lzma: 
 				LoadSprite_Lzma(SpriteInfo,PalettePtr); 
 				break;
 		}
 	}
 }
 
-void TSpriteDatabase::UnloadPsi(PSiInfo SpriteInfo)
+void SpriteDatabase::UnloadPsi(SiInfo* SpriteInfo)
 {
 	const unsigned long LockIndex=RandHash(SpriteInfo->SpriteName) & 7;
 	ScopedLock Al( DataBaseLock[LockIndex] );
@@ -190,7 +213,7 @@ void TSpriteDatabase::UnloadPsi(PSiInfo SpriteInfo)
 };
 
 /* Obsolete
-bool TSpriteDatabase::LoadSprite(const char* SpriteName,PSiInfo *lplpSpriteInfo,const char *Palette)
+bool SpriteDatabase::LoadSprite(const char* SpriteName,PSiInfo *lplpSpriteInfo,const char *Palette)
 {
 
 
@@ -243,12 +266,12 @@ bool TSpriteDatabase::LoadSprite(const char* SpriteName,PSiInfo *lplpSpriteInfo,
 	return Result;
 }*/
 
-void TSpriteDatabase::LoadSprite_NoComp(PSiInfo SpriteInfo,LPBYTE Pal)
+void SpriteDatabase::LoadSprite_NoComp(SiInfo* SpriteInfo,LPBYTE Pal)
 {
 	unsigned char *Data = new unsigned char[SpriteInfo->DataSize];
 	DataAccess.ReadData(Data,SpriteInfo->DataOffset,SpriteInfo->DataSize);
 
-	if (SpriteInfo->TextFmt==TextFmt_P8)
+	if (SpriteInfo->TextFmt==ETexFormat::P8)
 	{
 		LoadSurfaceP8As16(SpriteInfo,Data,Pal);
 	} else
@@ -261,14 +284,14 @@ void TSpriteDatabase::LoadSprite_NoComp(PSiInfo SpriteInfo,LPBYTE Pal)
 		delete []Data;
 }
 
-void TSpriteDatabase::LoadSprite_Zlib(PSiInfo SpriteInfo,LPBYTE Pal)
+void SpriteDatabase::LoadSprite_Zlib(SiInfo* SpriteInfo,LPBYTE Pal)
 {
 	unsigned char *Data = new unsigned char[SpriteInfo->DataSize];
 	DataAccess.ReadData(Data,SpriteInfo->DataOffset,SpriteInfo->DataSize);
 
 	unsigned long TailleUnc = SpriteInfo->Width*SpriteInfo->Height;
 	//hack
-	if (SpriteInfo->TextFmt==TextFmt_A8R8G8B8)
+	if (SpriteInfo->TextFmt==ETexFormat::A8R8G8B8)
 		TailleUnc<<=2;
 	unsigned char *Unpacked = new unsigned char[TailleUnc];
 
@@ -293,7 +316,7 @@ void TSpriteDatabase::LoadSprite_Zlib(PSiInfo SpriteInfo,LPBYTE Pal)
 		}
 	}
 
-	if (SpriteInfo->TextFmt==TextFmt_P8)
+	if (SpriteInfo->TextFmt==ETexFormat::P8)
 	{
 		LoadSurfaceP8As16(SpriteInfo,Unpacked,Pal);
 	} else
@@ -307,11 +330,11 @@ void TSpriteDatabase::LoadSprite_Zlib(PSiInfo SpriteInfo,LPBYTE Pal)
 	if(Data)
 		delete []Data;
 }
-void TSpriteDatabase::LoadSprite_Lzma(PSiInfo SpriteInfo,LPBYTE Pal)
+void SpriteDatabase::LoadSprite_Lzma(SiInfo* SpriteInfo,LPBYTE Pal)
 {
 };
 
-void TSpriteDatabase::LoadSurfaceRaw(PSiInfo SpriteInfo,LPBYTE Data)
+void SpriteDatabase::LoadSurfaceRaw(SiInfo* SpriteInfo,LPBYTE Data)
 {
 	unsigned long &Width  = SpriteInfo->Width;
 	unsigned long &Height = SpriteInfo->Height;
@@ -321,36 +344,36 @@ void TSpriteDatabase::LoadSurfaceRaw(PSiInfo SpriteInfo,LPBYTE Data)
 
 	switch (SpriteInfo->TextFmt)
 	{
-		case TextFmt_A8R8G8B8:
+		case ETexFormat::A8R8G8B8:
 			{
 				TextFormat=D3DFMT_A8R8G8B8;
 				FormatSize=4;
 				break;
 			}
-		case TextFmt_R5G6B5:
+		case ETexFormat::R5G6B5:
 			{
 				TextFormat=D3DFMT_R5G6B5;
 				FormatSize=2;
 				break;
 			}
-		case TextFmt_A1R5G5B5:
+		case ETexFormat::A1R5G5B5:
 			{
 				TextFormat=D3DFMT_A1R5G5B5;
 				FormatSize=2;
 				break;
 			}
-		case TextFmt_P8:
+		case ETexFormat::P8:
 			{
 				throw; //should NOT happen !!!!!!
 				break;
 			}
-		case TextFmt_DXT1A:
+		case ETexFormat::DXT1A:
 			{
 				FormatSize=DirectLoad;  //those format only support square texture, we can load at once
 				TextFormat=D3DFMT_DXT1;
 				break;
 			}
-		case TextFmt_DXT5:
+		case ETexFormat::DXT5:
 			{
 				FormatSize=DirectLoad;
 				TextFormat=D3DFMT_DXT5;
@@ -388,7 +411,7 @@ void TSpriteDatabase::LoadSurfaceRaw(PSiInfo SpriteInfo,LPBYTE Data)
 	SpriteInfo->Surface->UnlockRect(0);
 };
 
-void TSpriteDatabase::LoadSurfaceP8As32(PSiInfo SpriteInfo,LPBYTE Data,LPBYTE Pal)
+void SpriteDatabase::LoadSurfaceP8As32(SiInfo* SpriteInfo,LPBYTE Data,LPBYTE Pal)
 {
 	unsigned long &Width  = SpriteInfo->Width;
 	unsigned long &Height = SpriteInfo->Height;
@@ -444,7 +467,7 @@ void TSpriteDatabase::LoadSurfaceP8As32(PSiInfo SpriteInfo,LPBYTE Data,LPBYTE Pa
 	SpriteInfo->Surface->UnlockRect(0);
 }
 
-void TSpriteDatabase::LoadSurfaceP8As16(PSiInfo SpriteInfo,LPBYTE Data,LPBYTE Pal)
+void SpriteDatabase::LoadSurfaceP8As16(SiInfo* SpriteInfo,LPBYTE Data,LPBYTE Pal)
 {
 	unsigned long &Width  = SpriteInfo->Width;
 	unsigned long &Height = SpriteInfo->Height;

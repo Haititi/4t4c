@@ -8,7 +8,7 @@
 
 #pragma pack(push)
 #pragma pack(4)
-struct TSiHeader
+struct SiHeader
 {
 	char			Signature[4];
 	unsigned long   Version;
@@ -17,20 +17,9 @@ struct TSiHeader
 };
 #pragma pack(pop)
 
-const unsigned long StoreType_NoComp=0;
-const unsigned long StoreType_Zlib=1;
-const unsigned long StoreType_Lzma=2;
-
-const unsigned long TextFmt_A8R8G8B8=0;
-const unsigned long TextFmt_R5G6B5=1;
-const unsigned long TextFmt_A1R5G5B5=2;  
-const unsigned long TextFmt_P8=3;
-const unsigned long TextFmt_DXT1A=4;
-const unsigned long TextFmt_DXT5=5;
-
 //structure temporaire pour avoir acces au anciennes info
 //disparait dans le systeme finalisé
-struct TOldOffset
+struct OldOffsetStruct
 {
 	char*			SpriteName;
 	char*           PalName;
@@ -42,9 +31,7 @@ struct TOldOffset
 	unsigned short	TransColor;
 };
 
-typedef TOldOffset* POldOffset;
-
-struct TSiInfo
+struct SiInfo
 {
 	char*			SpriteName;
 	unsigned long	DataOffset;
@@ -56,65 +43,48 @@ struct TSiInfo
 	//internal use
 	unsigned long	UseCount; 
 	LPDIRECT3DTEXTURE9 Surface;
-	POldOffset		OldOff;
+	OldOffsetStruct*	OldOff;
 };
 
-typedef TSiInfo* PSiInfo;
-
-
-//V2 Sprite structure
-//CM deplacé ici pour eviter de se prendre la tete avec includes
-//ca va disparaitre de toute facon..
-struct TSpriteData 
-{
-	LPBYTE              Chunk;   // Chunck of data to be decompresed.
-	LPDIRECT3DTEXTURE9 Surface; // A DirectDraw Surface.
-};
-typedef TSpriteData *PSpriteData;
-
-class TSpriteDatabase 
+class SpriteDatabase 
 {
 private:
 	bool IndexLoaded;
-	THashPool* IndexHash;
+	HashPool* IndexHash;
 
-	TSiHeader SiHeader;
+	SiHeader SiHdr;
 
-	PSiInfo SiInfoArray;
-	POldOffset OldOffsetArray;
-	TOldOffset Dummy; //to avoid problems
+	SiInfo* SiInfoArray;
+	OldOffsetStruct* OldOffsetArray;
+	OldOffsetStruct Dummy; //to avoid problems
 
-	PSiInfo DummySprite; //to be able to remove a lot of check
+	SiInfo* DummySprite; //to be able to remove a lot of check
 
-	CriticalSection DataBaseLock[8]; //use 10 different lock to optimize access
+	CriticalSection DataBaseLock[8]; //use X different lock to optimize access
 
-	void LoadSurfaceP8As16(PSiInfo SpriteInfo,LPBYTE Data,LPBYTE Pal);
-	void LoadSurfaceP8As32(PSiInfo SpriteInfo,LPBYTE Data,LPBYTE Pal);
-	void LoadSurfaceRaw(PSiInfo SpriteInfo,LPBYTE Data);
+	void LoadSurfaceP8As16(SiInfo* SpriteInfo,LPBYTE Data,LPBYTE Pal);
+	void LoadSurfaceP8As32(SiInfo* SpriteInfo,LPBYTE Data,LPBYTE Pal);
+	void LoadSurfaceRaw(SiInfo* SpriteInfo,LPBYTE Data);
 
-	void LoadSprite_NoComp(PSiInfo SpriteInfo,LPBYTE Pal);
-	void LoadSprite_Zlib(PSiInfo SpriteInfo,LPBYTE Pal);
-	void LoadSprite_Lzma(PSiInfo SpriteInfo,LPBYTE Pal);
+	void LoadSprite_NoComp(SiInfo* SpriteInfo,LPBYTE Pal);
+	void LoadSprite_Zlib(SiInfo* SpriteInfo,LPBYTE Pal);
+	void LoadSprite_Lzma(SiInfo* SpriteInfo,LPBYTE Pal);
 
 public:
-	TSpriteDatabase();			// TSpriteDatabase Constructor.
-	~TSpriteDatabase();		// TSpriteDatabase Destructor.
+	SpriteDatabase();			// SpriteDatabase Constructor.
+	~SpriteDatabase();		// SpriteDatabase Destructor.
 
-	//bool LoadSprite(const char* SpriteName, PSiInfo *lplpSpriteInfo,const char *Palette); // Load a Sprite Type. //for compat with old system
-	//void Release( LPCTSTR lpszID); //compat
-
-	PSiInfo GetIndexEntry(const char* SpriteName);
-	void LoadPsi(PSiInfo SpriteInfo); //Load the surface corresponding to the Psi
-	void UnloadPsi(PSiInfo SpriteInfo);//unload the Surface with ref count
+	SiInfo* GetIndexEntry(const char* SpriteName);
+	void LoadPsi(SiInfo* SpriteInfo); //Load the surface corresponding to the Psi
+	void UnloadPsi(SiInfo* SpriteInfo);//unload the Surface with ref count
 };
 
 // Unique Global
-extern TSpriteDatabase SpriteDb;
-
+extern SpriteDatabase SpriteDb;
 
 
 //multithreaded Access to the data file
-struct TFileAccess
+struct FileAccessLock
 {
 	HANDLE File;
 	CriticalSection Lock;
@@ -124,13 +94,13 @@ const int MultiDataCount=4;
 //Chaotikmind 4 barrels data gun TM
 class TMultiDataAccess
 {
-	private:
-		TFileAccess FileAccess[MultiDataCount];
-		volatile unsigned long HelperIndex;
-	public:
-		TMultiDataAccess(void);
-		~TMultiDataAccess(void);
-		void ReadData(void* Buffer,const unsigned long Position,const unsigned long Count);
+private:
+	FileAccessLock FileAccess[MultiDataCount];
+	volatile unsigned long HelperIndex;
+public:
+	TMultiDataAccess(void);
+	~TMultiDataAccess(void);
+	void ReadData(void* Buffer,const unsigned long Position,const unsigned long Count);
 };
 
 #endif

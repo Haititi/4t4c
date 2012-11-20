@@ -1,23 +1,23 @@
 #include "SkinLoader.h"
 #include "FastStream.h"
 #include "Hash.h"
-#include "TGameObject.h"
+#include "GameObject.h"
 
-TSkinLoader SkinLoader;
+SkinLoader SkinLdr;
 
 //our direction organisation is not the same as the old one
 //TODO normalize that BS
 //const int DirTab2[9]={1,8,7,6,5,4,3,2,1};
 //const int DirConVert[9]={8,7,6,5,4,3,2,1,0};
 
-TSkinLoader::TSkinLoader(void)
+SkinLoader::SkinLoader(void)
 {
-	ItemSkinHash=new THashPool(1009);
-	MonsterSkinHash=new THashPool(1009);
-	PuppetSkinHash=new THashPool(1009);
+	ItemSkinHash=new HashPool(1009);
+	MonsterSkinHash=new HashPool(1009);
+	PuppetSkinHash=new HashPool(1009);
 };
 
-TSkinLoader::~TSkinLoader(void)
+SkinLoader::~SkinLoader(void)
 {
 
 	delete ItemSkinHash;
@@ -25,7 +25,7 @@ TSkinLoader::~TSkinLoader(void)
 	delete PuppetSkinHash;
 };
 
-void ReadFrameFromStream(TFrame &Frame,TFastStream &Strm)
+void ReadFrameFromStream(TFrame &Frame,FastStream &Strm)
 {
 	Frame.SpriteName=Strm.ReadWordString();
 	Frame.SpriteInfo=SpriteDb.GetIndexEntry(Frame.SpriteName);
@@ -33,16 +33,16 @@ void ReadFrameFromStream(TFrame &Frame,TFastStream &Strm)
 	Frame.OffsetY=Strm.ReadWord();
 };
 
-void TSkinLoader::Initialize(void)
+void SkinLoader::Initialize(void)
 {
-	TFastStream FstItem,FstMonst,FstPuppet;
+	FastStream FstItem,FstMonst,FstPuppet;
 	unsigned long Version,Count;
 
 	FstItem.LoadFromFile(L".\\GameFiles\\ItemSkinIdInfo.dat");
 
 	Version=FstItem.ReadLong();
 	Count=FstItem.ReadLong();
-	ItemSkinArray=new TItemSkinInfo[Count];
+	ItemSkinArray=new SkinInfo_Item[Count];
 	for (unsigned long i=0;i<Count;i++)
 	{
 		ItemSkinArray[i].SkinName=FstItem.ReadWordString();
@@ -67,7 +67,7 @@ void TSkinLoader::Initialize(void)
 
 	Version=FstMonst.ReadLong();
 	Count=FstMonst.ReadLong();
-	MonsterSkinArray=new TMonsterSkinInfo[Count];
+	MonsterSkinArray=new SkinInfo_Monster[Count];
 	for (unsigned long i=0;i<Count;i++)
 	{
 		MonsterSkinArray[i].SkinName=FstMonst.ReadWordString();
@@ -108,7 +108,7 @@ void TSkinLoader::Initialize(void)
 		}
 
 		MonsterSkinArray[i].AtkSoundCount=FstMonst.ReadLong();
-		MonsterSkinArray[i].AtkSounds=new TSkinSoundInfo[MonsterSkinArray[i].AtkSoundCount];
+		MonsterSkinArray[i].AtkSounds=new SkinInfo_Sound[MonsterSkinArray[i].AtkSoundCount];
 		for (unsigned long j=0;j<MonsterSkinArray[i].AtkSoundCount;j++)
 		{
 			MonsterSkinArray[i].AtkSounds[j].SoundName=FstMonst.ReadWordString();
@@ -116,7 +116,7 @@ void TSkinLoader::Initialize(void)
 			MonsterSkinArray[i].AtkSounds[j].PitchDev=FstMonst.ReadFloat();
 		}
 		MonsterSkinArray[i].HitSndCount=FstMonst.ReadLong();
-		MonsterSkinArray[i].HitSounds=new TSkinSoundInfo[MonsterSkinArray[i].HitSndCount];
+		MonsterSkinArray[i].HitSounds=new SkinInfo_Sound[MonsterSkinArray[i].HitSndCount];
 		for (unsigned long j=0;j<MonsterSkinArray[i].HitSndCount;j++)
 		{
 			MonsterSkinArray[i].HitSounds[j].SoundName=FstMonst.ReadWordString();
@@ -124,7 +124,7 @@ void TSkinLoader::Initialize(void)
 			MonsterSkinArray[i].HitSounds[j].PitchDev=FstMonst.ReadFloat();
 		}
 		MonsterSkinArray[i].DieSndCount=FstMonst.ReadLong();
-		MonsterSkinArray[i].DieSounds=new TSkinSoundInfo[MonsterSkinArray[i].DieSndCount];
+		MonsterSkinArray[i].DieSounds=new SkinInfo_Sound[MonsterSkinArray[i].DieSndCount];
 		for (unsigned long j=0;j<MonsterSkinArray[i].DieSndCount;j++)
 		{
 			MonsterSkinArray[i].DieSounds[j].SoundName=FstMonst.ReadWordString();
@@ -132,7 +132,7 @@ void TSkinLoader::Initialize(void)
 			MonsterSkinArray[i].DieSounds[j].PitchDev=FstMonst.ReadFloat();
 		}
 		MonsterSkinArray[i].IdleSndCount=FstMonst.ReadLong();
-		MonsterSkinArray[i].IdleSounds=new TSkinSoundInfo[MonsterSkinArray[i].IdleSndCount];
+		MonsterSkinArray[i].IdleSounds=new SkinInfo_Sound[MonsterSkinArray[i].IdleSndCount];
 		for (unsigned long j=0;j<MonsterSkinArray[i].IdleSndCount;j++)
 		{
 			MonsterSkinArray[i].IdleSounds[j].SoundName=FstMonst.ReadWordString();
@@ -147,7 +147,7 @@ void TSkinLoader::Initialize(void)
 
 	Version=FstPuppet.ReadLong();
 	Count=FstPuppet.ReadLong();
-	PuppetSkinArray=new TPuppetSkinInfo[Count];
+	PuppetSkinArray=new SkinInfo_Puppet[Count];
 	for (unsigned long i=0;i<Count;i++)
 	{
 		
@@ -207,41 +207,41 @@ void TSkinLoader::Initialize(void)
 	}
 
 		//TODO Initialize the ref naked puppet
-	//NakedPuppetMale=(TSkinRendererPuppet*)GetSkin(20010);
-	//NakedPuppetFemale=(TSkinRendererPuppet*)GetSkin(20011);
+	//NakedPuppetMale=(SkinRendererPuppet*)GetSkin(20010);
+	//NakedPuppetFemale=(SkinRendererPuppet*)GetSkin(20011);
 };
 	
-TSkinRenderer* TSkinLoader::GetSkin(const unsigned long SkinId)
+SkinRenderer* SkinLoader::GetSkin(const unsigned long SkinId)
 {
-	TSkinRenderer* Result=0;
+	SkinRenderer* Result=0;
 	if (SkinId<10000)
 	{
 		//Item skin
-		Result=new TSkinRendererItem(ItemSkinHash,SkinId);
+		Result=new SkinRendererItem(ItemSkinHash,SkinId);
 	} else
 	if ((SkinId==10011) || (SkinId==10012))
 	{ 
 		//puppet skin
-		Result=new TSkinRendererPuppet(PuppetSkinHash,SkinId); 
+		Result=new SkinRendererPuppet(PuppetSkinHash,SkinId); 
 	} else
 	if (SkinId<30000)
 	{
 		//monster skin
-		Result=new TSkinRendererMonster(MonsterSkinHash,SkinId);
+		Result=new SkinRendererMonster(MonsterSkinHash,SkinId);
 	}
 	//should we send a dummmy object or null if nothing is found ???
-	return Result;//new TSkinRenderer;
+	return Result;//new SkinRenderer;
 }; 
 
 
 
 //item skin class
 
-TSkinRendererItem::TSkinRendererItem(THashPool* HashPool,const unsigned long SkinId):TSkinRenderer(HashPool,SkinId)
+SkinRendererItem::SkinRendererItem(HashPool* HashPool,const unsigned long SkinId):SkinRenderer(HashPool,SkinId)
 {
 	SkinType=ESkinType::Item;
 
-	SkinInfo=(TItemSkinInfo*)HashPool->GetEntry(RandHash(SkinId));
+	SkinInfo=(SkinInfo_Item*)HashPool->GetEntry(RandHash(SkinId));
 
 	if (SkinInfo!=0)
 	{
@@ -255,7 +255,7 @@ TSkinRendererItem::TSkinRendererItem(THashPool* HashPool,const unsigned long Ski
 	}
 };
 
-TSkinRendererItem::~TSkinRendererItem(void)
+SkinRendererItem::~SkinRendererItem(void)
 {
 	if (SkinInfo!=0)
 	{
@@ -268,7 +268,7 @@ TSkinRendererItem::~TSkinRendererItem(void)
 };
 
 
-float TSkinRendererItem::GetAnimationDelay(void)
+float SkinRendererItem::GetAnimationDelay(void)
 {
 	if (SkinInfo!=0)
 	{
@@ -277,7 +277,7 @@ float TSkinRendererItem::GetAnimationDelay(void)
 	return 0.33f;
 };
 
-bool TSkinRendererItem::HitTest(const int Mx,const int My)
+bool SkinRendererItem::HitTest(const int Mx,const int My)
 {
 	if (SkinInfo!=0)
 	{
@@ -291,7 +291,7 @@ bool TSkinRendererItem::HitTest(const int Mx,const int My)
 	return false;
 };
 
-bool TSkinRendererItem::Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected)
+bool SkinRendererItem::Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected)
 {
 	//determine which sprite to draw
 	if (SkinInfo!=0)
@@ -305,12 +305,12 @@ bool TSkinRendererItem::Render(const float DeltaTime,const float BaseXPos,const 
 }; 
 
 //monster Skin Class
-TSkinRendererMonster::TSkinRendererMonster(THashPool* HashPool,const unsigned long SkinId):TSkinRenderer(HashPool,SkinId)
+SkinRendererMonster::SkinRendererMonster(HashPool* HashPool,const unsigned long SkinId):SkinRenderer(HashPool,SkinId)
 {
 	SkinType=ESkinType::Monster;
 	LastFrame=0;
 
-	SkinInfo=(TMonsterSkinInfo*)HashPool->GetEntry(RandHash(SkinId));
+	SkinInfo=(SkinInfo_Monster*)HashPool->GetEntry(RandHash(SkinId));
 
 	if (SkinInfo!=0)
 	{
@@ -335,7 +335,7 @@ TSkinRendererMonster::TSkinRendererMonster(THashPool* HashPool,const unsigned lo
 	}
 };
 	
-TSkinRendererMonster::~TSkinRendererMonster(void)
+SkinRendererMonster::~SkinRendererMonster(void)
 {
 	if (SkinInfo!=0)
 	{
@@ -360,7 +360,7 @@ TSkinRendererMonster::~TSkinRendererMonster(void)
 	}
 };
 	
-float TSkinRendererMonster::GetAnimationDelay(void)
+float SkinRendererMonster::GetAnimationDelay(void)
 {
 	if (SkinInfo!=0)
 	{
@@ -369,7 +369,7 @@ float TSkinRendererMonster::GetAnimationDelay(void)
 	return 0.33f;
 };
 
-bool TSkinRendererMonster::HitTest(const int Mx,const int My)
+bool SkinRendererMonster::HitTest(const int Mx,const int My)
 {
 	if (SkinInfo!=0)
 	{
@@ -381,7 +381,7 @@ bool TSkinRendererMonster::HitTest(const int Mx,const int My)
 	return false;
 };
 	
-bool TSkinRendererMonster::Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected)
+bool SkinRendererMonster::Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected)
 {
 	bool Result=false;
 	if (SkinInfo!=0)
@@ -454,11 +454,11 @@ bool TSkinRendererMonster::Render(const float DeltaTime,const float BaseXPos,con
 
 //puppet part class
 
-TSkinRendererPuppetPart::TSkinRendererPuppetPart(THashPool* HashPool,const unsigned long SkinId):TSkinRenderer(HashPool,SkinId)
+SkinRendererPuppetPart::SkinRendererPuppetPart(HashPool* HashPool,const unsigned long SkinId):SkinRenderer(HashPool,SkinId)
 {
 	SkinType=ESkinType::PuppetPart;
 
-	SkinInfo=(TPuppetSkinInfo*)HashPool->GetEntry(RandHash(SkinId));
+	SkinInfo=(SkinInfo_Puppet*)HashPool->GetEntry(RandHash(SkinId));
 
 	if (SkinInfo!=0)
 	{
@@ -487,7 +487,7 @@ TSkinRendererPuppetPart::TSkinRendererPuppetPart(THashPool* HashPool,const unsig
 	}
 };
 	
-TSkinRendererPuppetPart::~TSkinRendererPuppetPart(void)
+SkinRendererPuppetPart::~SkinRendererPuppetPart(void)
 {
 	if (SkinInfo!=0)
 	{
@@ -516,7 +516,7 @@ TSkinRendererPuppetPart::~TSkinRendererPuppetPart(void)
 	}
 };
 	
-float TSkinRendererPuppetPart::GetAnimationDelay(void)
+float SkinRendererPuppetPart::GetAnimationDelay(void)
 {
 	if (SkinInfo!=0)
 	{
@@ -525,7 +525,7 @@ float TSkinRendererPuppetPart::GetAnimationDelay(void)
 	return 0.33f;
 };
 	
-bool TSkinRendererPuppetPart::Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected)
+bool SkinRendererPuppetPart::Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected)
 {
 	bool Result=false;
 	if (SkinInfo!=0)
@@ -604,20 +604,20 @@ bool TSkinRendererPuppetPart::Render(const float DeltaTime,const float BaseXPos,
 };
 //puppet skin class
 
-TSkinRendererPuppet::TSkinRendererPuppet(THashPool* HashPool,const unsigned long SkinId):TSkinRenderer(HashPool,SkinId)
+SkinRendererPuppet::SkinRendererPuppet(HashPool* HashPool,const unsigned long SkinId):SkinRenderer(HashPool,SkinId)
 {
 	SkinType=ESkinType::Puppet;
 	SkinPool=HashPool;
 	Female=0;
 	if (SkinId == 10011)
 		Female=FemaleSkinMask;
-	for (int i=0;i<PuppetPart_Count;i++)
-		PuppetSkin[i]=new TSkinRendererPuppetPart(SkinPool,(i+1)|Female);
+	for (int i=0;i<EPuppetPartType::Count;i++)
+		PuppetSkin[i]=new SkinRendererPuppetPart(SkinPool,(i+1)|Female);
 };
 	
-TSkinRendererPuppet::~TSkinRendererPuppet(void)
+SkinRendererPuppet::~SkinRendererPuppet(void)
 {
-	for (unsigned long i=0;i<PuppetPart_Count;i++)
+	for (unsigned long i=0;i<EPuppetPartType::Count;i++)
 	{
 		if (PuppetSkin[i]!=0)
 		{
@@ -626,7 +626,7 @@ TSkinRendererPuppet::~TSkinRendererPuppet(void)
 	};
 };
 	
-float TSkinRendererPuppet::GetAnimationDelay(void)
+float SkinRendererPuppet::GetAnimationDelay(void)
 {
 	if (PuppetSkin[0]!=0)
 	{
@@ -635,7 +635,7 @@ float TSkinRendererPuppet::GetAnimationDelay(void)
 	return 0.33f;
 };
 	
-bool TSkinRendererPuppet::HitTest(const int Mx,const int My)
+bool SkinRendererPuppet::HitTest(const int Mx,const int My)
 {
 /*	if (SkinInfo!=0)
 	{
@@ -654,10 +654,10 @@ bool TSkinRendererPuppet::HitTest(const int Mx,const int My)
 	return false;
 };
 
-bool TSkinRendererPuppet::Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected)
+bool SkinRendererPuppet::Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected)
 {
 	bool Result=false;
-	for (unsigned int i=0;i<PuppetPart_Count;i++)
+	for (unsigned int i=0;i<EPuppetPartType::Count;i++)
 	{
 		if (PuppetSkin[i]!=0)
 		{
@@ -667,7 +667,7 @@ bool TSkinRendererPuppet::Render(const float DeltaTime,const float BaseXPos,cons
 	return Result;
 };
 	
-void TSkinRendererPuppet::ChangePart(const TPuppetPartType EquipPos,const unsigned short PartId)
+void SkinRendererPuppet::ChangePart(const EPuppetPartType::Enum EquipPos,const unsigned short PartId)
 {
 	unsigned long NewId=PartId;
 	if (PartId!=0)
@@ -687,6 +687,6 @@ void TSkinRendererPuppet::ChangePart(const TPuppetPartType EquipPos,const unsign
 	if (PuppetSkin[EquipPos]->GetSkinId()!=NewId)
 	{		
 		delete PuppetSkin[EquipPos];
-		PuppetSkin[EquipPos]=new TSkinRendererPuppetPart(SkinPool,NewId);
+		PuppetSkin[EquipPos]=new SkinRendererPuppetPart(SkinPool,NewId);
 	}
 };

@@ -8,17 +8,16 @@ class SoundObject;
 struct TFrame
 {
 	char* SpriteName;
-	PSiInfo SpriteInfo; //link to the database sprite
+	SiInfo* SpriteInfo; //link to the database sprite
 	short OffsetX;//drawing offsets
 	short OffsetY;
 };
-typedef TFrame* PFrame; 
 
 struct TFrameList
 {
 	unsigned long Reversed;
 	unsigned long GraphCount;
-	PFrame FrameList;
+	TFrame* FrameList;
 };
 
 struct TDirection
@@ -26,16 +25,15 @@ struct TDirection
 	TFrameList Direction[8];
 };
 
-struct TSkinSoundInfo
+struct SkinInfo_Sound
 {
 	char* SoundName;
 	SoundObject* SndObj;
 	//PSoundBuf//link To the database corresponding sound
 	float PitchDev; //range of pitch modification
 };
-typedef TSkinSoundInfo* PSkinSoundInfo;
 
-struct TItemSkinInfo
+struct SkinInfo_Item
 {
 	char* SkinName;
 	unsigned short SkinId;
@@ -47,10 +45,10 @@ struct TItemSkinInfo
 	char* OpenSound;
 	char* CloseSound;
 	unsigned long GraphCount;
-	PFrame GraphList;
+	TFrame* GraphList;
 };
 
-struct TMonsterSkinInfo
+struct SkinInfo_Monster
 {
 	char* SkinName;
 	unsigned short Id;
@@ -62,43 +60,46 @@ struct TMonsterSkinInfo
 	TDirection Attack;
 	TFrameList Death;
 	unsigned long AtkSoundCount;
-	PSkinSoundInfo AtkSounds;
+	SkinInfo_Sound* AtkSounds;
 	unsigned long HitSndCount;
-	PSkinSoundInfo HitSounds;
+	SkinInfo_Sound* HitSounds;
 	unsigned long DieSndCount;
-	PSkinSoundInfo DieSounds;
+	SkinInfo_Sound* DieSounds;
 	unsigned long IdleSndCount;
-	PSkinSoundInfo IdleSounds;
+	SkinInfo_Sound* IdleSounds;
 };
 
 const unsigned long FemaleSkinMask=0x80000000;
 
-enum TPuppetPartType
+struct EPuppetPartType
 {
-	PuppetPart_HandLeft,	//hand or gloves
-	PuppetPart_HandRight,
-	PuppetPart_ArmLeft,		// allways Arm ?
-	PuppetPart_ArmRight,
-	PuppetPart_Feets,		//feets or boot
-	PuppetPart_Legs,		//legs or legging
-	PuppetPart_Body,		//body or armor
-	PuppetPart_Head,		//head
-	PuppetPart_Hat,			//Air or hat ?  or air  and hat ?
+	enum Enum
+	{
+		HandLeft,	//hand or gloves
+		HandRight,
+		ArmLeft,		// allways Arm ?
+		ArmRight,
+		Feets,		//feets or boot
+		Legs,		//legs or legging
+		Body,		//body or armor
+		Head,		//head
+		Hat,			//Air or hat ?  or air  and hat ?
 	
-	PuppetPart_Weapon,		//over HandLEft
-	PuppetPart_Shield,		//over handRight
-	PuppetPart_Boot,		//maybe not needed (don't need to draw feet if boot are present)
-	PuppetPart_Cape,		//cape or wings
+		Weapon,		//over HandLEft
+		Shield,		//over handRight
+		Boot,		//maybe not needed (don't need to draw feet if boot are present)
+		Cape,		//cape or wings
 	
-	PuppePart_Mask,			//over Head
+		Mask,			//over Head
 
-	PuppetPart_Count
-	//PuppetPart_RobeUnder, //
-	//PuppetPart_Weapon2,
-	//PuppetPart_Hat,
+		Count
+		//RobeUnder, //
+		//Weapon2,
+		//Hat,
+	};
 };
 
-struct TPuppetSkinInfo
+struct SkinInfo_Puppet
 {
 	char* SkinName;
 	unsigned short Id;

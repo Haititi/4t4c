@@ -18,7 +18,7 @@ struct ESkinType
 	};
 };
 
-class TSkinRenderer
+class SkinRenderer
 {
 protected:
 	unsigned long SkinType;
@@ -30,7 +30,7 @@ protected:
 	//hit test vars
 	float LastBaseX,LastBaseY; //last draw position
 public:
-	TSkinRenderer(THashPool* HashPool,const unsigned long SkinId)
+	SkinRenderer(HashPool* HashPool,const unsigned long SkinId)
 	{	
 		SkinType=ESkinType::Void; 
 		ThisSkinId=SkinId;
@@ -39,7 +39,7 @@ public:
 		TimeAccu=0;
 		LastBaseX=LastBaseY=0.0f;
 	};
-	virtual ~TSkinRenderer(void){};
+	virtual ~SkinRenderer(void){};
 	unsigned long GetSkinId(void){return ThisSkinId;};
 	unsigned long GetSkinType(void){return SkinType;};
 	virtual float GetAnimationDelay(void){return 0.033f;};
@@ -47,77 +47,77 @@ public:
 	virtual bool Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected){return false;}; //render the skin at X,y pixel coordinate
 };
 
-class TSkinRendererItem : public TSkinRenderer
+class SkinRendererItem : public SkinRenderer
 {
 private:
-	TItemSkinInfo* SkinInfo;
+	SkinInfo_Item* SkinInfo;
 public:
-	TSkinRendererItem(THashPool* HashPool,const unsigned long SkinId);
-	~TSkinRendererItem(void);
+	SkinRendererItem(HashPool* HashPool,const unsigned long SkinId);
+	~SkinRendererItem(void);
 	float GetAnimationDelay(void);
 	bool HitTest(const int Mx,const int My);
 	bool Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected); //render the skin at X,y pixel coordinate
 };
 
-class TSkinRendererMonster : public TSkinRenderer
+class SkinRendererMonster : public SkinRenderer
 {
 private:
-	TMonsterSkinInfo* SkinInfo;
+	SkinInfo_Monster* SkinInfo;
 	TFrame* LastFrame;
 public:
-	TSkinRendererMonster(THashPool* HashPool,const unsigned long SkinId);
-	~TSkinRendererMonster(void);
+	SkinRendererMonster(HashPool* HashPool,const unsigned long SkinId);
+	~SkinRendererMonster(void);
 	float GetAnimationDelay(void);
 	bool HitTest(const int Mx,const int My);
 	bool Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected); //render the skin at X,y pixel coordinate
 };
 
-class TSkinRendererPuppetPart : public TSkinRenderer
+class SkinRendererPuppetPart : public SkinRenderer
 {
 private:
-	TPuppetSkinInfo* SkinInfo;
+	SkinInfo_Puppet* SkinInfo;
 public:
-	TSkinRendererPuppetPart(THashPool* HashPool,const unsigned long SkinId);
-	~TSkinRendererPuppetPart(void);
+	SkinRendererPuppetPart(HashPool* HashPool,const unsigned long SkinId);
+	~SkinRendererPuppetPart(void);
 	float GetAnimationDelay(void);
 	bool Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected); //render the skin at X,y pixel coordinate
 };
 
-class TSkinRendererPuppet : public TSkinRenderer
+class SkinRendererPuppet : public SkinRenderer
 {
 private:
-	THashPool* SkinPool;
-	TSkinRendererPuppetPart *PuppetSkin[PuppetPart_Count]; 
+	HashPool* SkinPool;
+	SkinRendererPuppetPart *PuppetSkin[EPuppetPartType::Count]; 
 	unsigned long Female;
 public:
-	TSkinRendererPuppet(THashPool* HashPool,const unsigned long SkinId);
-	~TSkinRendererPuppet(void);
+	SkinRendererPuppet(HashPool* HashPool,const unsigned long SkinId);
+	~SkinRendererPuppet(void);
 	float GetAnimationDelay(void);
 	bool HitTest(const int Mx,const int My);
 	bool Render(const float DeltaTime,const float BaseXPos,const float BaseYPos,const float Depth,const unsigned long Action,const unsigned long Dir,const bool Selected); //render the skin at X,y pixel coordinate
-	void ChangePart(const TPuppetPartType EquipPos,const unsigned short PartId);
+	void ChangePart(const EPuppetPartType::Enum EquipPos,const unsigned short PartId);
 };
 
-class TSkinLoader
+class SkinLoader
 {
 private:
-	TItemSkinInfo* ItemSkinArray;
-	THashPool* ItemSkinHash;
+	SkinInfo_Item* ItemSkinArray;
+	HashPool* ItemSkinHash;
 
-	TMonsterSkinInfo* MonsterSkinArray;
-	THashPool* MonsterSkinHash;
+	SkinInfo_Monster* MonsterSkinArray;
+	HashPool* MonsterSkinHash;
 
-	TPuppetSkinInfo* PuppetSkinArray;
-	THashPool* PuppetSkinHash;
+	SkinInfo_Puppet* PuppetSkinArray;
+	HashPool* PuppetSkinHash;
 
-	TSkinRendererPuppet *NakedPuppetMale,*NakedPuppetFemale; //to draw underlying naked sprite
+	SkinRendererPuppet *NakedPuppetMale,*NakedPuppetFemale; //to draw underlying naked sprite
 public:
-	TSkinLoader(void);
-	~TSkinLoader(void);
+	SkinLoader(void);
+	~SkinLoader(void);
 	void Initialize(void);
-	TSkinRenderer* GetSkin(const unsigned long SkinId); //return a skin object that handle the drawing of that skin type
+	SkinRenderer* GetSkin(const unsigned long SkinId); //return a skin object that handle the drawing of that skin type
 };
 
-extern TSkinLoader SkinLoader;
+extern SkinLoader SkinLdr;
 
 #endif

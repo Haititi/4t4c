@@ -6,16 +6,16 @@
 // dictionary structure definitions
 struct dictionary_entry_t
 {
-   wchar_t key[128]; // key string
-   unsigned long hash; // key hash value
-   wchar_t value[256]; // value string
+	wchar_t key[128]; // key string
+	unsigned long hash; // key hash value
+	wchar_t value[256]; // value string
 };
 
 struct dictionary_t
 {
-   int size; // storage size
-   dictionary_entry_t *entries; // array of entries (mallocated)
-   int entry_count; // number of entries in dictionary
+	int size; // storage size
+	dictionary_entry_t *entries; // array of entries (mallocated)
+	int entry_count; // number of entries in dictionary
 };
 
 class IniFile

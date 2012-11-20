@@ -30,6 +30,6 @@
 #include <set>
 #include <map>
 #include <string>
-#include <queue>
+#include <algorithm>
 
 #endif

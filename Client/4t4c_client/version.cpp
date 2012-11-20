@@ -33,12 +33,6 @@ unsigned long GetVersion( void )
     return CLIENT_VERSION;
 }
 
-//return build time as string
-const wchar_t* GetBuildTime( void )
-{
-    return BUILD_TIME;
-}
-
 //  Returns the revision
 int GetSubVersion( void )
 {

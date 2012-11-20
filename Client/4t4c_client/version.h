@@ -5,10 +5,9 @@
 
 namespace Version
 {
-    std::wstring& GetVersionText();
-    unsigned long GetVersion();
-    const wchar_t   *GetBuildTime();
-    int         GetSubVersion();
+    std::wstring&	GetVersionText(void);
+    unsigned long	GetVersion(void);
+    int				GetSubVersion(void);
 };
 
 #endif

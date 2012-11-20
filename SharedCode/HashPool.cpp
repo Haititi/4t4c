@@ -1,24 +1,22 @@
 #include "HashPool.h"
 #include "hash.h"
 
-THashPool::THashPool(unsigned long PoolSize)
+HashPool::HashPool(unsigned long PoolSize)
 {
 	//TODO we should choose the next prime bigger than PoolSize
 	HashSize=PoolSize;
 	ItemCount=0;
 	HashList=new PHashItem[HashSize];
 
-	ActualData=0;
-	CycleIt=0;
-	CycleObj=0;
+	ActualData=nullptr;
 
 	for(unsigned int i=0;i<HashSize;i++)
 	{
-		HashList[i]=0;
+		HashList[i]=nullptr;
 	}
 };
 
-THashPool::~THashPool(void)
+HashPool::~HashPool(void)
 {
 	//go through each bucket and destroy each HashItem 
 	for (unsigned int i=0;i<HashSize;i++)
@@ -28,10 +26,10 @@ THashPool::~THashPool(void)
 	delete [] HashList;
 };
 
-bool THashPool::AddHashEntry(const unsigned long Hashcode,void* Data)
+bool HashPool::AddHashEntry(const unsigned long Hashcode,void* Data)
 {
 
-	PHashItem Last=0;
+	PHashItem Last=nullptr;
 	PHashItem *ActEntry;
 
 	const unsigned long Num=Hashcode%HashSize;
@@ -41,10 +39,10 @@ bool THashPool::AddHashEntry(const unsigned long Hashcode,void* Data)
 	{
 		if (!(*ActEntry)) 
 		{
-			*ActEntry=new THashItem;
+			*ActEntry=new HashItem;
 			(*ActEntry)->Data=Data;
 			(*ActEntry)->Hash=Hashcode; 
-			(*ActEntry)->Next=0;
+			(*ActEntry)->Next=nullptr;
 			if (Last)
 				Last->Next=*ActEntry;
 			ItemCount++;
@@ -59,7 +57,7 @@ bool THashPool::AddHashEntry(const unsigned long Hashcode,void* Data)
 	}
 };
 
-bool THashPool::ReplaceHashEntry(const unsigned long Hashcode,void* Data)
+bool HashPool::ReplaceHashEntry(const unsigned long Hashcode,void* Data)
 {
 	PHashItem ActEntry;
 
@@ -83,9 +81,9 @@ bool THashPool::ReplaceHashEntry(const unsigned long Hashcode,void* Data)
 	}
 };
 
-void* THashPool::GetEntry(const unsigned long Hashcode)
+void* HashPool::GetEntry(const unsigned long Hashcode)
 {
-	PHashItem ActEntry=0;
+	PHashItem ActEntry=nullptr;
 
 	const unsigned long Num=Hashcode%HashSize;
 
@@ -94,16 +92,16 @@ void* THashPool::GetEntry(const unsigned long Hashcode)
 	while (1)
 	{
 		if (!ActEntry) 
-			return 0;
+			return nullptr;
 		if (ActEntry->Hash==Hashcode) 
 			return ActEntry->Data;
 		ActEntry=ActEntry->Next;
 	}
 };
 
-bool THashPool::RemoveItem(const unsigned long Hashcode)
+bool HashPool::RemoveItem(const unsigned long Hashcode)
 {
-	PHashItem ActEntry=0,LastEntry=0;
+	PHashItem ActEntry=nullptr,LastEntry=nullptr;
 
 	const unsigned long Num=Hashcode%HashSize;
 
@@ -116,17 +114,17 @@ bool THashPool::RemoveItem(const unsigned long Hashcode)
 		if (ActEntry->Hash==Hashcode)
 		{
 			//We destroy that one
-			if (LastEntry==0)
+			if (LastEntry==nullptr)
 			{
-				HashList[Num]=0;
+				HashList[Num]=nullptr;
 			}else
 			{
-				if (ActEntry->Next!=0)
+				if (ActEntry->Next!=nullptr)
 				{
 					LastEntry->Next=ActEntry->Next;
 				} else
 				{
-					LastEntry->Next=0;
+					LastEntry->Next=nullptr;
 				}
 			}
 			delete ActEntry;
@@ -138,32 +136,32 @@ bool THashPool::RemoveItem(const unsigned long Hashcode)
 	}
 };
 
-bool THashPool::IsObjectValid(void* Data)
+bool HashPool::IsObjectValid(void* Data)
 {
 	//TODO To Implement
 	return true;
 };
 
-void THashPool::InitIterator(THashIterator &It)
+void HashPool::InitIterator(HashIterator &It)
 {
 	It.Parent=this;
 	It.ResetCycling();
 };
 		
-void THashIterator::ResetCycling(void)
+void HashIterator::ResetCycling(void)
 {
 	CycleIt=0;
 	CycleObj=Parent->HashList[0];
 };
 		
-void* THashIterator::GetNextEntry(void)
+void* HashIterator::GetNextEntry(void)
 {
 	//void* Result=0;
-	ActualData=0;
+	ActualData=nullptr;
 
-	while ((ActualData==0) && (CycleIt!=(Parent->HashSize-1)))
+	while ((ActualData==nullptr) && (CycleIt!=(Parent->HashSize-1)))
 	{
-		if (CycleObj==0)
+		if (CycleObj==nullptr)
 		{
 			CycleIt++;
 			CycleObj=Parent->HashList[CycleIt];

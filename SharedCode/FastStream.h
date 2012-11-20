@@ -4,7 +4,7 @@
 #include <string>
 
 
-class TFastStream
+class FastStream
 {
 	private:
 		unsigned int Granularity,Capacity;
@@ -12,8 +12,8 @@ class TFastStream
 		void *Memory,*Position;
 		void RaiseCapacity(unsigned int Add);
 	public:
-		TFastStream(void);
-		~TFastStream(void);
+		FastStream(void);
+		~FastStream(void);
 		void SetSize(unsigned int NewSize);
 		inline unsigned int GetSize(void){return Size;};
 		void SetGranularity(unsigned int Grain);
@@ -26,28 +26,33 @@ class TFastStream
 
 		void Write(void *Buffer,const long n);
 	
+		void WriteBool(bool n);
 		void WriteByte(unsigned char n);
 		void WriteWord(unsigned short n);
 		void WriteLong(unsigned long n);
 		void WriteFloat(float n);
+		void WriteDouble(double n);
 	
-		void WriteByteString(const char *n);	
 		void WriteWordString(const char *n);
 		void WriteLongString(const char *n);
 
 		void Read(void *Buffer,const long n);
 		
+		bool ReadBool(void);
 		unsigned char ReadByte(void);
 		unsigned short ReadWord(void);
 		unsigned long ReadLong(void);
 		float ReadFloat(void);
+		double ReadDouble(void);
 
-		char* ReadByteString(void);	
 		char* ReadWordString(void);
 		char* ReadLongString(void);
 
 		char* ReadTextString(void);
 
+
+		std::wstring ReadWideString(void);
+		void WriteWideString(std::wstring& Value);
 
 };
 

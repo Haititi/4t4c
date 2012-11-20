@@ -38,7 +38,7 @@ unsigned long RandHash(const char *Txt)
 	return Result;
 };
 
-unsigned long RandHash(std::wstring& Txt)
+unsigned long RandHash(const std::wstring& Txt)
 {
 	unsigned long i,Result;
 	const char* p;

@@ -3,32 +3,30 @@
 
 //store a pointer  related to an associated Key
 
-struct THashItem
+struct HashItem
 {
 	unsigned long Hash;
 	void *Data;
-	THashItem *Next;
+	HashItem *Next;
 };
 
-typedef THashItem* PHashItem;
+typedef HashItem* PHashItem;
 
-class THashIterator;
+class HashIterator;
 
 //TODO the Hashpool eventually need a critical section
-class THashPool
+class HashPool
 {
-	friend THashIterator;
+	friend HashIterator;
 private:
 	unsigned long HashSize; //size of the HashTable
 	int ItemCount;
 	PHashItem* HashList;
 
-	unsigned long CycleIt; // Entry number in the hash list
-	PHashItem CycleObj;//Actual pointed item;
 	void* ActualData;
 public:
-	THashPool(unsigned long PoolSize);
-	~THashPool(void);
+	HashPool(unsigned long PoolSize);
+	~HashPool(void);
 	bool AddHashEntry(const unsigned long Hashcode,void* Data);
 	bool ReplaceHashEntry(const unsigned long Hashcode,void* Data);
 	void* GetEntry(const unsigned long Hashcode);
@@ -36,19 +34,19 @@ public:
 	bool IsObjectValid(void* Data);
 	int Count(void){return ItemCount;};
 	
-	void InitIterator(THashIterator &It);
+	void InitIterator(HashIterator &It);
 };
 
-class THashIterator
+class HashIterator
 {
-	friend THashPool;
+	friend HashPool;
 private:
-	THashPool const * Parent;
+	HashPool const * Parent;
 	unsigned long CycleIt; // Entry number in the hash list
 	PHashItem CycleObj;//Actual pointed item;
 	void* ActualData;
 public:
-	THashIterator(void):Parent(0){};
+	HashIterator(void):Parent(0){};
 
 	void ResetCycling(void);
 	void* GetNextEntry(void);
